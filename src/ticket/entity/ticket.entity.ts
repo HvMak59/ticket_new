@@ -1,0 +1,106 @@
+import { TicketStatus } from "src/common";
+import { Customer } from "src/customer/entity/customer.entity";
+import { Device } from "src/device/entity/device.entity";
+import { User } from "src/user/entity/user.entity";
+import { BeforeInsert, BeforeUpdate, Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, OneToMany, PrimaryColumn } from "typeorm";
+import { TicketMedia } from "./ticket-media.entity";
+import { KEY_SEPARATOR } from "src/app_config/constants";
+import { Issue } from "../../issue/entities/issue.entity";
+import { Quotation } from "src/quotation/entity/quotation.entity";
+
+@Entity()
+export class Ticket {
+  @PrimaryColumn()
+  id: string;
+
+  @Column()
+  customerId: string;
+
+  @ManyToOne(() => Customer, (customer) => customer.tickets)
+  customer: Customer;
+
+  // @Column({ nullable: true })
+  // raisedById: string;
+
+  // @ManyToOne(() => CustomerUser, { nullable: true })
+  // raisedBy: CustomerUser;  
+
+  @Column({ type: 'enum', enum: TicketStatus, default: TicketStatus.OPEN })
+  status: TicketStatus;
+
+  @Column({ nullable: true })
+  deviceId: string;
+
+  @ManyToOne(() => Device, { nullable: true })
+  device: Device;
+
+  @Column({ nullable: true })
+  issueId: string;
+
+  @OneToMany(() => Quotation, (quotation) => quotation.ticket)
+  quotations: Quotation[];
+
+  @ManyToOne(() => Issue, (issue) => issue.tickets, { nullable: true })
+  issue: Issue;
+
+  @Column({ nullable: true })
+  dateOfPurchase?: Date;
+
+  @Column({ nullable: true })
+  ticketMediaId: string;
+
+  @ManyToOne(() => TicketMedia, { nullable: true })
+  ticketMedia: TicketMedia;
+
+  @Column({ nullable: true })
+  assignedToId: string;
+
+  @ManyToOne(() => User, { nullable: true })
+  assignedTo: User;
+
+  @Column({ nullable: true })
+  assignedById: string;
+
+  @ManyToOne(() => User, { nullable: true })
+  assignedBy: User;
+
+  @CreateDateColumn({ type: 'timestamptz' })
+  createdAt: Date;
+
+  @Column({ default: 'System' })
+  createdBy: string;
+
+  @Column({ nullable: true })
+  updatedBy: string;
+
+  @Column({ nullable: true })
+  deletedBy: string;
+
+  @DeleteDateColumn({ type: 'timestamptz' })
+  deletedAt?: Date;
+
+  @Column({ nullable: true })
+  searchTerm: string;
+
+  // @BeforeInsert()
+  // @BeforeUpdate()
+  // setSearchTerm() {
+  //   this.searchTerm = [
+  //     this.customerId,
+  //     this.deviceId,
+  //     this.issueId,
+  //   ]
+  //     .filter(Boolean)
+  //     .join(KEY_SEPARATOR);
+  // }
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  setSearchTerm() {
+    this.searchTerm = this.customerId +
+      KEY_SEPARATOR +
+      (this.deviceId ?? this.device.id) +
+      KEY_SEPARATOR +
+      (this.issueId ?? this.issue.id);
+  }
+}

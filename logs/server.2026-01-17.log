@@ -1,0 +1,11 @@
+[[34mdebug[39m] [2026-01-17 10:49:46.912] [AuthService] login() : {"id":"hiten:hiten@gmail.com","password":"$2b$10$.8A4XqRUgx4u/bnemyFrNOPii2PSiBSDaUJ6xPGFqxoifXR6Vh70m"}
+[[34mdebug[39m] [2026-01-17 10:56:01.118] [UserService] create():Start
+[[34mdebug[39m] [2026-01-17 10:56:01.121] [UserService] create():Input : {"name":"hiten2","email":"hiten2@gmail.com","password":"1234","createdBy":"hiten:hiten@gmail.com"}
+[[34mdebug[39m] [2026-01-17 10:58:02.355] [UserService] create():Start
+[[34mdebug[39m] [2026-01-17 10:58:02.357] [UserService] create():Input : {"id":"hiten","name":"hiten1","password":"1234","createdBy":"hiten:hiten@gmail.com"}
+[[34mdebug[39m] [2026-01-17 10:58:27.810] [UserService] create():Start
+[[34mdebug[39m] [2026-01-17 10:58:27.812] [UserService] create():Input : {"id":"hiten","name":"hiten1","email":"hiten@1234","password":"1234","createdBy":"hiten:hiten@gmail.com"}
+[[34mdebug[39m] [2026-01-17 10:58:27.951] [UserService] No roles assigned to user hiten
+[[34mdebug[39m] [2026-01-17 10:58:42.946] [AuthService] login() : {"id":"hiten","password":"$2b$10$7291efYKCWjz7zhKrXV5IelK1y1/NZ8yVRUGVACJ/qgJNpPyQmZgi"}
+[[34mdebug[39m] [2026-01-17 13:24:54.045] [StateController] findAll:Input : Find state with searchCriteria: {}
+[[34mdebug[39m] [2026-01-17 13:24:54.052] [StateService] findAll:Input : Find State with searchCriteria : {}
