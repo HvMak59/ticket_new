@@ -180,41 +180,123 @@ export class TicketService {
   //   return savedTicket;
   // }
 
+  private woking = 1;
+  // async create(createTicketDto: CreateTicketDto) {
+  //   const fnName = this.create.name;
+  //   this.logger.debug(`${fnName} : Creating ticket`);
+
+  //   const device = await this.deviceService.findOrCreate({
+  //     id: createTicketDto.id,
+  //     serialNumber: createTicketDto.serialNumber,
+  //     deviceManufacturerId: createTicketDto.deviceManufacturerId,
+  //     deviceModelId: createTicketDto.deviceModelId,
+  //     otherModelNumber: createTicketDto.otherModelNumber,
+  //   });
+
+  //   const id = await this.generateId();
+
+  //   // const issueId: string | null = createTicketDto.issueId ?? null;
+
+  //   const issueId: string | null = createTicketDto.issueId ?? null;
+  //   const isOtherIssue = !createTicketDto.issueId;
+
+  //   const ticket = this.repo.create({
+  //     ...createTicketDto,
+  //     id,
+  //     deviceId: device.id,
+  //     issueId,
+  //     isOtherIssue,
+  //     status: TicketStatus.OPEN,
+  //   });
+
+  //   // let issueId: string | null = null;
+  //   //     let isOtherIssue = false;
+
+  //   //     if (createTicketDto.issueId) {
+  //   //       // Predefined issue
+  //   //       issueId = createTicketDto.issueId;
+  //   //     } else {
+  //   //       // Customer typed issue
+  //   //       isOtherIssue = true;
+  //   //     }
+
+  //   //     const ticket = this.repo.create({
+  //   //       ...createTicketDto,
+  //   //       id,
+  //   //       deviceId: device.id,
+  //   //       issueId,
+  //   //       isOtherIssue,
+  //   //       status: TicketStatus.OPEN,
+  //   //     });
+
+  //   const savedTicket = await this.repo.save(ticket);
+
+  //   this.logger.debug(`${fnName} : Ticket created with id : ${savedTicket.id}`);
+
+  //   await this.logActivity(
+  //     savedTicket.id,
+  //     'Ticket Created',
+  //     'New service ticket has been created',
+  //     null,
+  //   );
+
+  //   return savedTicket;
+  // }
+
   async create(createTicketDto: CreateTicketDto) {
     const fnName = this.create.name;
     this.logger.debug(`${fnName} : Creating ticket`);
 
-    const device = await this.deviceService.findOrCreate({
+    // Handle Device (existing or custom)
+    const findOrCreateDeviceDto = {
       id: createTicketDto.id,
       serialNumber: createTicketDto.serialNumber,
       deviceManufacturerId: createTicketDto.deviceManufacturerId,
       deviceModelId: createTicketDto.deviceModelId,
       otherModelNumber: createTicketDto.otherModelNumber,
-    });
+    }
+    const device = await this.deviceService.findOrCreate(findOrCreateDeviceDto);
 
+    // Generate ticket IDdata 
     const id = await this.generateId();
+
+    // Handle Issue
+    const issueId: string | null = createTicketDto.issueId ?? null;
+    const isOtherIssue: boolean = !createTicketDto.issueId;
+    const otherIssueId: string | undefined = isOtherIssue ? createTicketDto.otherIssueId : undefined;
+    const otherIssueDesc: string | undefined = isOtherIssue ? createTicketDto.otherIssueDesc : undefined;
+
+    // 
+    // Handle custom manufacturer/model (optional)
+    const isOtherManufacturer: boolean = !createTicketDto.deviceManufacturerId && !!createTicketDto.otherManufacturerName;
+    const isOtherModel: boolean = !createTicketDto.deviceModelId && !!createTicketDto.otherModelName;
 
     const ticket = this.repo.create({
       ...createTicketDto,
       id,
       deviceId: device.id,
+      issueId,
+      isOtherIssue,
+      otherIssueId,
+      otherIssueDesc,
+      isOtherManufacturer,
+      isOtherModel,
       status: TicketStatus.OPEN,
     });
-    //
 
     const savedTicket = await this.repo.save(ticket);
-
     this.logger.debug(`${fnName} : Ticket created with id : ${savedTicket.id}`);
 
-    await this.logActivity(
-      savedTicket.id,
-      'Ticket Created',
-      'New service ticket has been created',
-      null,
-    );
+    // await this.logActivity(
+    //   savedTicket.id,
+    //   'Ticket Created',
+    //   'New service ticket has been created',
+    //   null,
+    // );
 
     return savedTicket;
   }
+
 
   //  async update(id: string, updateDeviceDto: UpdateTicketDto) {
   //   const fnName = this.update.name;

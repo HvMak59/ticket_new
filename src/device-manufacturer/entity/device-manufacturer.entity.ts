@@ -24,11 +24,17 @@ export class DeviceManufacturer {
   @Column({ unique: true })
   name: string;
 
-  @OneToMany(() => Device, (device) => device.deviceManufacturer)
-  devices: Device[];
+  // @OneToMany(() => Device, (device) => device.deviceManufacturer)
+  // devices: Device[];
 
-  @OneToMany(() => DeviceModel, (deviceModel) => deviceModel.deviceManufacturer)
+  @OneToMany(() => DeviceModel, (device) => device.deviceManufacturer, {
+    nullable: true,
+    cascade: true,
+  })
   deviceModels: DeviceModel[];
+
+  // @OneToMany(() => DeviceModel, (deviceModel) => deviceModel.deviceManufacturer)
+  // deviceModels: DeviceModel[];
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;

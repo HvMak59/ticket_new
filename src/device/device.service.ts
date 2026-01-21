@@ -33,11 +33,12 @@ export class DeviceService {
     }
   }
 
-  async update(id: string, updateDeviceDto: UpdateDeviceDto): Promise<Device> {
+  async update(id: string, updateDeviceDto: UpdateDeviceDto) {
     const fnName = this.update.name;
     const input =
       'Input : id : ' +
       id +
+
       ' updateDevice : ' +
       JSON.stringify(updateDeviceDto);
 
@@ -91,7 +92,7 @@ export class DeviceService {
     return device;
   }
 
-  async findBySerialNumber(serialNumber: string): Promise<Device | null> {
+  async findBySerialNumber(serialNumber: string) {
     const fnName = this.findBySerialNumber.name;
     const input = `Input : Find Device by serialNumber : ${serialNumber}`;
 
@@ -103,6 +104,7 @@ export class DeviceService {
     });
   }
 
+  // 
   async findOrCreate(createDeviceDto: CreateDeviceDto) {
     const fnName = this.findOrCreate.name;
     const input = `Input : FindOrCreate Device : ${JSON.stringify(createDeviceDto)}`;
@@ -118,6 +120,7 @@ export class DeviceService {
     }
     return device;
   }
+
 
   async isUnderWarranty(deviceId: string) {
     const fnName = this.isUnderWarranty.name;

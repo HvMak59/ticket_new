@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { DeviceModel } from '../../device-model/entity/device-model.entity';
 import { KEY_SEPARATOR } from 'src/app_config/constants';
-import { DeviceManufacturer } from 'src/device-manufacturer/entity/device-manufacturer.entity';
+
 
 @Entity()
 export class Device {
@@ -30,25 +30,16 @@ export class Device {
   serialNumber: string;
 
   @Column({ nullable: true })
-  otherModelNumber: string;
-
-  // @Column({ type: 'date', nullable: true })
-  // purchaseDate: Date;
-
-  // @Column({ type: 'date', nullable: true })
-  // warrantyExpiry: Date;
-
-  @Column()
-  deviceManufacturerId: string;
-
-  @ManyToOne(() => DeviceManufacturer, (dMfg) => dMfg.devices)
-  deviceManufacturer: DeviceManufacturer;
-
-  @Column({ nullable: true })
   deviceModelId: string;
 
-  @ManyToOne(() => DeviceModel, (deviceModel) => deviceModel.devices)
+  @ManyToOne(() => DeviceModel, (dvcMdl) => dvcMdl.devices, {
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+  })
   deviceModel: DeviceModel;
+
+  @Column({ nullable: true })
+  otherDeviceModel: string;
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
@@ -71,25 +62,22 @@ export class Device {
   @BeforeInsert()
   @BeforeUpdate()
   setSearchTerm() {
-    this.searchTerm = (this.deviceManufacturerId ?? this.deviceManufacturer.id) +
-      KEY_SEPARATOR +
+    this.searchTerm =
       (this.deviceModelId ?? this.deviceModel.id ?? '') +
       KEY_SEPARATOR +
-      (this.otherModelNumber ?? '')
+      (this.otherDeviceModel ?? '')
   }
 
   getKey() {
     return (
-      (this.deviceManufacturerId ?? this.deviceManufacturer.id) +
-      KEY_SEPARATOR +
       (this.deviceModelId ?? this.deviceModel.id ?? '') +
-      KEY_SEPARATOR +
-      (this.otherModelNumber ?? '') +
       KEY_SEPARATOR +
       this.serialNumber
     );
   }
 }
+
+
 
 
 

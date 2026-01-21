@@ -23,7 +23,13 @@ export class DeviceType {
   @Column()
   name: string;
 
-  @OneToMany(() => DeviceModel, (deviceModel) => deviceModel.deviceType)
+  // @OneToMany(() => DeviceModel, (deviceModel) => deviceModel.deviceType)
+  // deviceModels: DeviceModel[];
+
+  @OneToMany(() => DeviceModel, (device) => device.deviceType, {
+    cascade: ['update'],
+    onDelete: 'SET NULL',
+  })
   deviceModels: DeviceModel[];
 
   @OneToMany(() => Issue, (issue) => issue.deviceType)

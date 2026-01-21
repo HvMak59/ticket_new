@@ -65,8 +65,14 @@ export class DeviceModel {
   )
   deviceManufacturer: DeviceManufacturer;
 
-  @OneToMany(() => Device, (device) => device.deviceModel)
-  devices: Device[];
+  // @OneToMany(() => Device, (device) => device.deviceModel)
+  // devices: Device[];
+
+  @OneToMany(() => Device, (device) => device.deviceModel, {
+    nullable: true,
+    cascade: true,
+  })
+  devices?: Device[];
 
   @Column({ default: 'System' })
   createdBy: string;
