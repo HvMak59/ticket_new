@@ -5,44 +5,42 @@ import { Device } from './entity/device.entity';
 import { CreateDeviceDto, UpdateDeviceDto, FindDeviceDto } from './dto';
 import { createLogger } from '../app_config/logger';
 import { DUPLICATE_RECORD, KEY_SEPARATOR, NO_RECORD } from '../app_config/constants';
-// import serviceConfig from '../../app_config/service.config.json';
+import serviceConfig from '../app_config/service.config.json';
 
 @Injectable()
 export class DeviceService {
   private readonly logger = createLogger(DeviceService.name);
-  // private readonly relations = servic
+  private readonly relations = serviceConfig.device.relations;
   constructor(
     @InjectRepository(Device)
     private readonly repo: Repository<Device>,
   ) { }
 
-  async create(createDeviceDto: CreateDeviceDto): Promise<Device> {
-    const fnName = this.create.name;
-    const input = `Input : Create Object : ${JSON.stringify(createDeviceDto)}`;
-
-    this.logger.debug(fnName + KEY_SEPARATOR + input);
-
-    const result = await this.repo.findOneBy({ serialNumber: createDeviceDto.serialNumber });
-    if (result != null) {
-      this.logger.error(`${fnName} : ${DUPLICATE_RECORD} : Device ${result.id} already exists`);
-      throw new Error(`${DUPLICATE_RECORD} : Device ${result.id} already exists`);
-    } else {
+  async create(createDeviceDto: CreateDeviceDto) {
+    const fnName = 'create()';
+    const input = `Input : ${JSON.stringify(createDeviceDto)}`;
+    this.logger.debug(`${fnName} : ${input}`);
+    let result;
+    result = await this.repo.findOneBy({
+      deviceModelId: createDeviceDto.deviceModelId,
+      serialNumber: createDeviceDto.serialNumber,
+    });
+    this.logger.debug('Device found : ' + JSON.stringify(result));
+    if (result === null) {
       const deviceObj = this.repo.create(createDeviceDto);
-      this.logger.debug(`${fnName} : ToBeCreated Device is : ${JSON.stringify(deviceObj)}`);
       return await this.repo.save(deviceObj);
+    } else {
+      const errMsg = `${DUPLICATE_RECORD} : ${createDeviceDto.serialNumber} already exists`;
+      this.logger.error(`${fnName} : ${errMsg}`);
+      throw new Error(errMsg);
     }
   }
 
   async update(id: string, updateDeviceDto: UpdateDeviceDto) {
     const fnName = this.update.name;
-    const input =
-      'Input : id : ' +
-      id +
+    const input = `Input: Id: ${id}, updateDeviceDto: ${JSON.stringify(updateDeviceDto)}`;
 
-      ' updateDevice : ' +
-      JSON.stringify(updateDeviceDto);
-
-    this.logger.debug(`${fnName} : ${input}`);
+    this.logger.debug(fnName + KEY_SEPARATOR + input);
 
     if (id == null) {
       throw new Error('Device id is not available');
@@ -64,14 +62,15 @@ export class DeviceService {
     }
   }
 
-  async findAll(searchCriteria: FindDeviceDto) {
+  async findAll(searchCriteria: FindDeviceDto, relationsRequired?: boolean) {
     const fnName = this.findAll.name;
     const input = `Input : Find Device with searchCriteria : ${JSON.stringify(searchCriteria)}`;
     this.logger.debug(fnName + KEY_SEPARATOR + input);
 
+    const relations = relationsRequired ? this.relations : [];
     return this.repo.find({
       where: searchCriteria,
-      relations: ["deviceModel", "deviceManufacturer"],
+      relations: relations
     });
   }
 
@@ -83,7 +82,7 @@ export class DeviceService {
 
     const device = await this.repo.findOne({
       where: { id },
-      relations: ['deviceModel', 'deviceModel.deviceType', 'deviceModel.manufacturer'],
+      relations: ['deviceModel'],
     });
     if (!device) {
       this.logger.error(`${fnName} : ${NO_RECORD} : Device id : ${id} not found`);
@@ -92,16 +91,8 @@ export class DeviceService {
     return device;
   }
 
-  async findBySerialNumber(serialNumber: string) {
-    const fnName = this.findBySerialNumber.name;
-    const input = `Input : Find Device by serialNumber : ${serialNumber}`;
-
-    this.logger.debug(fnName + KEY_SEPARATOR + input);
-
-    return this.repo.findOne({
-      where: { serialNumber },
-      relations: ['deviceModel', 'deviceModel.deviceType', 'deviceModel.manufacturer'],
-    });
+  findOne(searchCriteria: FindDeviceDto) {
+    return this.repo.findOne({ where: searchCriteria });
   }
 
   // 
@@ -111,7 +102,12 @@ export class DeviceService {
 
     this.logger.debug(fnName + KEY_SEPARATOR + input);
 
-    let device = await this.repo.findOne({ where: { id: createDeviceDto.id } });
+    let device = await this.repo.findOne({
+      where: {
+        deviceModelId: createDeviceDto.deviceModelId,
+        serialNumber: createDeviceDto.serialNumber
+      }
+    });
 
     if (!device) {
       this.logger.debug(`${fnName} : Device not found, creating new one`);
@@ -150,6 +146,34 @@ export class DeviceService {
     } else {
       this.logger.debug(`${fnName} : Device id : ${id} deleted successfully`);
       return result;
+    }
+  }
+
+  async softDelete(id: string) {
+    const fnName = this.softDelete.name;
+    const input = `Input : SoftDelete Device : ${id}`;
+
+    this.logger.debug(fnName + KEY_SEPARATOR + input);
+    return await this.repo.softDelete(id);
+  }
+
+  async restore(id: string) {
+    const fnName = this.softDelete.name;
+    const input = `Input : Restore Device : ${id}`;
+
+    this.logger.debug(fnName + KEY_SEPARATOR + input);
+    const result = await this.repo.restore(id);
+    if (result.affected === 0) {
+      this.logger.error(
+        `${fnName} : ${NO_RECORD} : Device id : ${id} not found`,
+      );
+      throw new Error(`${NO_RECORD} : Device id : ${id} not found`);
+    } else {
+      this.logger.debug(`${fnName} Device id : ${id} restored successfully`);
+      let restored = await this.findOneById(id);
+      restored!.deletedBy = undefined;
+      this.repo.save(restored!);
+      return restored;
     }
   }
 }

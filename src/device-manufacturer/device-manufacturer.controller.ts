@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { DeviceManufacturerService } from './device-manufacturer.service';
 import { CreateDeviceManufacturerDto, UpdateDeviceManufacturerDto, FindDeviceManufacturerDto } from './dto';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { } from '../common/guards/jwt-auth.guard';
 import { UserId } from '../utils/req-user-id-decorator';
 import { createLogger } from '../app_config/logger';
 import { KEY_SEPARATOR, USER_NOT_IN_REQUEST_HEADER, NO_RECORD } from '../app_config/constants';
@@ -22,7 +22,7 @@ export class DeviceManufacturerController {
   constructor(private readonly deviceManufacturerService: DeviceManufacturerService) { }
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards()
   async create(
     @UserId() userId: string,
     @Body() createDeviceManufacturerDto: CreateDeviceManufacturerDto,
@@ -43,7 +43,6 @@ export class DeviceManufacturerController {
   }
 
   @Patch()
-  @UseGuards(JwtAuthGuard)
   async update(
     @Query('id') id: string,
     @UserId() userId: string,
@@ -66,19 +65,30 @@ export class DeviceManufacturerController {
   @Get()
   async findAll(@Query() searchCriteria: FindDeviceManufacturerDto) {
     const fnName = this.findAll.name;
-    const input = `Input : Find Manufacturer with searchCriteria : ${JSON.stringify(searchCriteria)}`;
+    const input = `Input : Find DeviceManufacturer with searchCriteria : ${JSON.stringify(searchCriteria)}`;
 
     this.logger.debug(fnName + KEY_SEPARATOR + input);
     this.logger.debug(`${fnName} : Calling findAll service`);
 
     return await this.deviceManufacturerService.findAll(searchCriteria);
   }
-  // 9099911677 - kalpesh raval ,adhar LL
+
+  @Get('relation')
+  async findAllWthRelation(@Query() searchCriteria: FindDeviceManufacturerDto) {
+    const fnName = this.findAll.name;
+    const input = `Input : Find DeviceManufacturer with searchCriteria : ${JSON.stringify(searchCriteria)} with relation.`;
+
+    this.logger.debug(fnName + KEY_SEPARATOR + input);
+    const relationsRequired = true;
+    this.logger.debug(`${fnName} : Calling findAllWthRelation service`);
+
+    return await this.deviceManufacturerService.findAll(searchCriteria, relationsRequired);
+  }
 
   @Get('id')
   async findOneById(@Query('id') id: string) {
     const fnName = this.findOneById.name;
-    const input = `Input : Find Manufacturer by id : ${id}`;
+    const input = `Input : Find DeviceManufacturer by id : ${id}`;
 
     this.logger.debug(fnName + KEY_SEPARATOR + input);
     this.logger.debug(`${fnName} : Calling findOneById service`);
@@ -87,10 +97,9 @@ export class DeviceManufacturerController {
   }
 
   @Delete()
-  @UseGuards(JwtAuthGuard)
   async remove(@UserId() userId: string, @Query('id') id: string) {
     const fnName = this.remove.name;
-    const input = `Input : Manufacturer id : ${id} to be deleted`;
+    const input = `Input : DeviceManufacturer id : ${id} to be deleted`;
 
     this.logger.debug(fnName + KEY_SEPARATOR + input);
 
@@ -104,31 +113,31 @@ export class DeviceManufacturerController {
   }
 
   @Delete('softDelete')
-  @UseGuards(JwtAuthGuard)
   async softDelete(@UserId() userId: string, @Query('id') id: string) {
     const fnName = this.softDelete.name;
-    const input = `Input : Manufacturer id : ${id} to be softDeleted`;
+    const input = `Input : DeviceManufacturer id : ${id} to be softDeleted`;
     this.logger.debug(fnName + KEY_SEPARATOR + input);
 
     if (userId == null) {
       this.logger.error(fnName + KEY_SEPARATOR + USER_NOT_IN_REQUEST_HEADER);
       throw new Error(USER_NOT_IN_REQUEST_HEADER);
     } else {
-      const manufacturer = await this.deviceManufacturerService.findOneById(id);
-      if (manufacturer) {
-        return await this.deviceManufacturerService.softDelete(id, userId);
-      } else {
-        this.logger.error(`${fnName} : ${NO_RECORD} : Manufacturer id : ${id} not found`);
-        throw new Error(`Manufacturer id : ${id} not found`);
-      }
+      return await this.deviceManufacturerService.softDelete(id, userId);
+
+      // const manufacturer = await this.deviceManufacturerService.findOneById(id);
+      // if (manufacturer) {
+      //   return await this.deviceManufacturerService.softDelete(id, userId);
+      // } else {
+      //   this.logger.error(`${fnName} : ${NO_RECORD} : DeviceManufacturer id : ${id} not found`);
+      //   throw new Error(`DeviceManufacturer id : ${id} not found`);
+      // }
     }
   }
 
   @Patch('restore')
-  @UseGuards(JwtAuthGuard)
   async restore(@UserId() userId: string, @Query('id') id: string) {
     const fnName = this.restore.name;
-    const input = `Input : Manufacturer id : ${id} to be restored`;
+    const input = `Input : DeviceManufacturer id : ${id} to be restored`;
 
     this.logger.debug(fnName + KEY_SEPARATOR + input);
 

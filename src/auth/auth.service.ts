@@ -12,6 +12,8 @@ import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { OtpService } from 'src/otp/otp.service';
 import { VerifyOtpDto } from 'src/otp/dto/verify-otp.dto';
+import { RoleType } from 'src/common';
+import { Otp } from 'src/otp/entities/otp.entity';
 
 @Injectable()
 export class AuthService {
@@ -21,6 +23,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
     private readonly otpService: OtpService,
+    private readonly customerService: CustomerService,
   ) { }
 
   /* async authenticate(username: string, password: string) {
@@ -52,18 +55,21 @@ export class AuthService {
 
   async login(user: User) {
     this.logger.debug(`login() : ${JSON.stringify(user)}`);
+    // const roles = user.userRoles.map(r => r.roleId);
     const payload = {
       username: user.name,
       sub: user.id,
+      role: user.userRoles
+      // roles    //change role guard accordingly 
     };
     return this.jwtService.sign(payload);
   }
 
   async register(registerDto: RegisterDto) {
-    const { name, email, password } = registerDto;
+    const { name, emailId, password } = registerDto;
 
-    // check user exists
-    const existingUser = await this.userService.findOne(email as FindUserDto);
+    // check user exists 
+    const existingUser = await this.userService.findOne(emailId as FindUserDto);
 
     if (existingUser) {
       throw new BadRequestException('Email already registered');
@@ -74,7 +80,7 @@ export class AuthService {
 
     const createUserDto: CreateUserDto = {
       // name,email,password:hashedPassword
-      name, email, password
+      name, emailId, password
     }
     // const user = this.userService.create({
     //   name,
@@ -89,20 +95,92 @@ export class AuthService {
 
   // async loginWithOtp(phone: string) {
   // async loginWithOtp(email: string) {
+
+
+
+  // async loginWithOtp(otp: Otp) {
+  //   const valid = await this.otpService.verifyOtp(otp.emailId, otp.otp);
+
+  //   if (!valid) {
+  //     throw new UnauthorizedException('Invalid OTP');
+  //   }
+
+  //   const customer = await this.customerService.findOne({ emailId: dto.emailId });
+  //   if (customer) {
+  //     const payload = {
+  //       sub: customer.id,
+  //       email: customer.emailId,
+  //       role: RoleType.CUSTOMER,
+  //     };
+
+  //     return {
+  //       accessToken: this.jwtService.sign(payload),
+  //       isNewCustomer: false,
+  //     };
+  //   }
+
+  //   const payload = {
+  //     sub: dto.emailId,
+  //     email: dto.emailId,
+  //     role: RoleType.CUSTOMER
+  //   };
+
+  //   return {
+  //     accessToken: this.jwtService.sign(payload),
+  //     isNewCustomer: true,
+  //   };
+  // }
+
+  private working = 5;
   async loginWithOtp(dto: VerifyOtpDto) {
-    const valid = await this.otpService.verifyOtp(dto.email, dto.otp);
+    const valid = await this.otpService.verifyOtp(dto.emailId, dto.otp);
 
     if (!valid) {
-      throw new UnauthorizedException('OTP invalid');
+      throw new UnauthorizedException('Invalid OTP');
+    }
+
+    const customer = await this.customerService.findOne({ emailId: dto.emailId });
+    if (customer) {
+      const payload = {
+        sub: customer.id,
+        email: customer.emailId,
+        role: RoleType.CUSTOMER,
+      };
+
+      return {
+        accessToken: this.jwtService.sign(payload),
+        isNewCustomer: false,
+      };
     }
 
     const payload = {
-      email: dto.email,
-      type: 'CUSTOMER',
+      sub: dto.emailId,
+      email: dto.emailId,
+      role: RoleType.CUSTOMER
     };
 
     return {
       accessToken: this.jwtService.sign(payload),
+      isNewCustomer: true,
     };
   }
+
+
+  private idk = 4;
+  // async loginWithOtp(dto: VerifyOtpDto) {
+  //   const valid = await this.otpService.verifyOtp(dto.email, dto.otp);
+
+  //   if (!valid) {
+  //     throw new UnauthorizedException('OTP invalid');
+  //   }
+
+  //   const payload = {
+  //     email: dto.email,
+  //     type: 'CUSTOMER',
+  //   };
+
+  //   return {
+  //     accessToken: this.jwtService.sign(payload),
+  //   };
+  // }
 }

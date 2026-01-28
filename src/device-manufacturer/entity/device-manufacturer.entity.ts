@@ -46,7 +46,7 @@ export class DeviceManufacturer {
   updatedBy: string;
 
   @Column({ nullable: true })
-  deletedBy: string;
+  deletedBy?: string;
 
   @DeleteDateColumn({ type: 'timestamptz', nullable: true })
   deletedAt: Date;

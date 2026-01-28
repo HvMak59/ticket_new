@@ -16,12 +16,13 @@ import { winstonServerLogger } from 'src/app_config/serverWinston.config';
 //   KEY_SEPARATOR,
 //   NO_RECORD,
 // } from 'app_config/constants';
+import serviceConfig from '../app_config/service.config.json';
+
 
 @Injectable()
 export class DistrictService {
   private readonly logger = winstonServerLogger(DistrictService.name);
-  // private readonly relations = serviceConfig.district.relations;
-  private readonly relations = [];
+  private readonly relations = serviceConfig.district.relations;
 
   constructor(
     @InjectRepository(District) private readonly repo: Repository<District>,
@@ -64,9 +65,6 @@ export class DistrictService {
     return this.repo.find({
       where: searchCriteria,
       relations: relations,
-      order: {
-        id: 'ASC',
-      },
     });
   }
 
@@ -139,10 +137,10 @@ export class DistrictService {
     return this.repo.delete(id);
   }
 
-  async softDelete(id: string, stateToBeSoftDeleted: District) {
+  async softDelete(id: string, districtToBeSoftDeleted: District) {
     const fnName = this.softDelete.name;
     this.logger.debug(fnName);
-    await this.repo.save(stateToBeSoftDeleted);
+    await this.repo.save(districtToBeSoftDeleted);
     const result = await this.repo.softDelete(id);
 
     if (result.affected === 0) {

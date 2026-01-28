@@ -5,7 +5,7 @@ export class VerifyOtpDto {
     // phone: string;
 
     @IsEmail()
-    email: string;
+    emailId: string;
 
 
     @Length(6, 6)

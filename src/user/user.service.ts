@@ -4,7 +4,7 @@ import { In, Like, Repository } from 'typeorm';
 import { User } from './entity/user.entity';
 // import { CreateUserDto, UpdateUserDto, FindUserDto } from './dto';
 import { createLogger } from '../app_config/logger';
-import { KEY_SEPARATOR, DUPLICATE_RECORD, NO_RECORD, USER_ROLE_URL } from '../app_config/constants';
+import { KEY_SEPARATOR, DUPLICATE_RECORD, NO_RECORD, USER_ROLE_URL, USER_ROLE_UPDATE_FROM_USER_URL } from '../app_config/constants';
 import { UserRoleService } from '../user-role/user-role.service';
 // import { UserRole } from '../common/enums';
 import * as bcrypt from 'bcrypt';
@@ -17,6 +17,8 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { UserRole } from 'src/user-role/entity/user-role.entity';
 import { getTokenString, throwErrIfSrvcRespFailure } from 'src/utils/other';
+import serviceConfig from '../app_config/service.config.json';
+
 
 const NO_OF_SALTS = 10;
 
@@ -27,6 +29,7 @@ export class UserService {
   private appPort;
   private baseURL;
   private readonly logger = winstonServerLogger(UserService.name);
+  private readonly relations = serviceConfig.user.relations;
 
   constructor(
     @InjectRepository(User)
@@ -129,44 +132,33 @@ export class UserService {
   }
 
 
-  async findAll(searchCriteria?: FindUserDto): Promise<User[]> {
+  async findAll(searchCriteria: FindUserDto, relationsRequired?: boolean) {
     const fnName = this.findAll.name;
     const input = `Input : Find User with searchCriteria : ${JSON.stringify(searchCriteria)}`;
 
     this.logger.debug(fnName + KEY_SEPARATOR + input);
 
-    return this.repo.find({ where: searchCriteria, relations: ['userRoles'] });
+    const relations = relationsRequired ? this.relations : [];
+    return this.repo.find({ where: searchCriteria, relations: relations });
   }
   async findOne(searchCriteria: FindUserDto) {
     return this.repo.findOne({ where: searchCriteria });
   }
 
-  async findOneById(id: string): Promise<User> {
+  async findOneById(id: string) {
     const fnName = this.findOneById.name;
     const input = `Input : Find User by id : ${id}`;
 
     this.logger.debug(fnName + KEY_SEPARATOR + input);
 
-    const user = await this.repo.findOne({ where: { id }, relations: ['userRoles'] });
+    // const user = await this.repo.findOne({ where: { id }, relations: ['userRoles'] });
+    const user = await this.repo.findOne({ where: { id } });
 
     if (!user) {
       this.logger.error(`${fnName} : ${NO_RECORD} : User id : ${id} not found`);
       throw new Error(`${NO_RECORD} : User id : ${id} not found`);
     }
     return user;
-  }
-
-  async findByEmail(email: string): Promise<User | null> {
-    const fnName = this.findByEmail.name;
-    const input = `Input : Find User by email : ${email}`;
-
-    this.logger.debug(fnName + KEY_SEPARATOR + input);
-
-    return this.repo.findOne({
-      where: { email },
-      relations: ['userRoles'],
-      select: ['id', 'email', 'password', 'phone', 'createdAt', 'updatedAt'],
-    });
   }
 
   // async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
@@ -198,6 +190,66 @@ export class UserService {
   //   return savedUser;
   // }
 
+  async update(id: string, updateUserDto: UpdateUserDto, token?: string) {
+    const fnName = this.update.name;
+    const input = `Input : user id : ${id}, Update : ${JSON.stringify(
+      updateUserDto,
+    )}`;
+    this.logger.debug(`${fnName} : ${input}`);
+    if (updateUserDto.id == null) {
+      this.logger.debug(`${fnName} : updateUserDto.id is null`);
+      updateUserDto.id = id;
+    } else if (updateUserDto.id != id) {
+      throw new Error('User Id and update User object Id do not match');
+    }
+    if (updateUserDto.password != null) {
+      updateUserDto.password = await bcrypt.hash(
+        updateUserDto.password,
+        NO_OF_SALTS,
+      );
+    }
+    const mergedUser = await this.repo.preload(updateUserDto);
+    this.logger.debug(`mergedUser : ${JSON.stringify(mergedUser)}`);
+    if (mergedUser == null) {
+      throw new Error(`${NO_RECORD} : User id : ${id} does not exist`);
+    }
+    let userToBeSaved: User = mergedUser;
+
+    if (mergedUser.userRoles != null && mergedUser.userRoles.length > 0) {
+      this.logger.debug(`${fnName} : User to be saved with roles`);
+      const { userRoles, ...mergedUserWithoutRoles } = mergedUser;
+      userToBeSaved = this.repo.create(mergedUserWithoutRoles);
+      const result = await this.repo.save(userToBeSaved);
+      if (result === null) {
+        throw new Error(`${NO_RECORD} : User id : ${id} does not exist`);
+      }
+      const updateUserRoleURL = new URL(
+        USER_ROLE_UPDATE_FROM_USER_URL,
+        this.baseURL,
+      );
+
+      updateUserRoleURL.searchParams.append('userId', id);
+      this.logger.debug(`updateUserRoleURL : ${updateUserRoleURL.href}`);
+      if (token) {
+        this.httpService.axiosRef.defaults.headers.common['Authorization'] =
+          getTokenString(token);
+      } else {
+        throw new Error(`${fnName} : No token found`);
+      }
+      const updateUserRoleURLResp = await firstValueFrom(
+        this.httpService.patch<UserRole[]>(updateUserRoleURL.href, userRoles),
+      );
+      throwErrIfSrvcRespFailure(updateUserRoleURLResp);
+      return updateUserDto;
+    } else {
+      this.logger.debug(`${fnName} : User to be saved without roles`);
+      const user = await this.repo.save(userToBeSaved);
+      this.logger.debug(`Saved user : ${JSON.stringify(user)}`);
+      return user;
+    }
+    //}
+  }
+
   findOneWithPassword(searchUser: FindUserDto) {
     return this.repo
       .createQueryBuilder('user')
@@ -221,7 +273,7 @@ export class UserService {
     return engineers;
   }
 
-  async delete(id: string, deletedBy: string): Promise<any> {
+  async delete(id: string, deletedBy: string) {
     const fnName = this.delete.name;
     const input = `Input : User id : ${id} to be deleted`;
 
@@ -245,27 +297,40 @@ export class UserService {
     return result;
   }
 
-  async findBySearchTerm(searchTerm: string): Promise<User[]> {
-    const fnName = this.findBySearchTerm.name;
-    const input = `Input : Search term : ${searchTerm}`;
-
+  async softDelete(id: string, deletedBy: string) {
+    const fnName = this.softDelete.name;
+    const input = `Input : User id : ${id} to be softDeleted`;
     this.logger.debug(fnName + KEY_SEPARATOR + input);
 
-    return this.repo.find({
-      where: { searchTerm: Like(`%${searchTerm}%`) },
-      relations: ['userRoles'],
-    });
+    const User = await this.findOneById(id);
+    User.deletedBy = deletedBy;
+    await this.repo.save(User);
+
+    const result = await this.repo.softDelete(id);
+    if (result.affected === 0) {
+      this.logger.error(`${fnName} : ${NO_RECORD} : User id : ${id} not found`);
+      throw new Error(`${NO_RECORD} : User id : ${id} not found`);
+    } else {
+      this.logger.debug(`${fnName} : User id : ${id} softDeleted successfully`);
+      return result;
+    }
   }
 
-  async findByMultipleIds(ids: string[]): Promise<User[]> {
-    const fnName = this.findByMultipleIds.name;
-    const input = `Input : Find Users by multiple ids : ${JSON.stringify(ids)}`;
+  async restore(id: string) {
+    const fnName = this.restore.name;
+    this.logger.debug(`${fnName} : Restoring User id : ${id}`);
 
-    this.logger.debug(fnName + KEY_SEPARATOR + input);
+    const result = await this.repo.restore(id);
 
-    return this.repo.find({
-      where: { id: In(ids) },
-      relations: ['userRoles'],
-    });
+    if (result.affected === 0) {
+      this.logger.error(`${fnName} : ${NO_RECORD} : User id : ${id} not found`);
+      throw new Error(`${NO_RECORD} : User id : ${id} not found`);
+    } else {
+      this.logger.debug(`${fnName} : User id : ${id} restored successfully`);
+      const restored = await this.findOneById(id);
+      // restored.deletedBy = null;
+      return await this.repo.save(restored);
+    }
   }
+
 }

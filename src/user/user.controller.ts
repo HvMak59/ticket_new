@@ -4,14 +4,15 @@ import { UserService } from './user.service';
 import { createLogger } from '../app_config/logger';
 import { KEY_SEPARATOR, NO_RECORD, USER_NOT_IN_REQUEST_HEADER } from '../app_config/constants';
 import { UserId } from '../utils/req-user-id-decorator';
-import { JwtAuthGuard, RolesGuard, Roles, RoleType } from '../common';
+import { Roles, RoleType } from '../common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { FindUserDto } from './dto/find-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Token } from './token-extractor/token-extractor';
+import { JwtAuthGuard } from 'src/auth/entities/jwt-auth-guard';
 
 @Controller('user')
-@UseGuards(JwtAuthGuard)
+// @UseGuards(JwtAuthGuard)
 export class UserController {
   private readonly logger = createLogger(UserController.name);
 
@@ -21,7 +22,8 @@ export class UserController {
   async create(
     @Token() token: string,
     @UserId() userId: string,
-    @Body() createUserDto: CreateUserDto) {
+    @Body() createUserDto: CreateUserDto
+  ) {
     const fnName = this.create.name;
     const input = `Input : ${JSON.stringify(createUserDto)}`;
 
@@ -38,7 +40,7 @@ export class UserController {
   }
 
   @Get()
-  @UseGuards(RolesGuard)
+  // @UseGuards(RolesGuard)
   async findAll(@Query() searchCriteria: FindUserDto) {
     const fnName = this.findAll.name;
     const input = `Input : Find User with searchCriteria : ${JSON.stringify(searchCriteria)}`;
@@ -46,6 +48,16 @@ export class UserController {
     this.logger.debug(fnName + KEY_SEPARATOR + input);
 
     return await this.userService.findAll(searchCriteria);
+  }
+
+  @Get('relations')
+  async findAllWthRelations(@Query() searchCriteria: FindUserDto) {
+    const fnName = this.findAll.name;
+    const input = `Input : Find User with searchCriteria : ${JSON.stringify(searchCriteria)}`;
+
+    this.logger.debug(fnName + KEY_SEPARATOR + input);
+    const relationsRequired = true;
+    return await this.userService.findAll(searchCriteria, relationsRequired);
   }
 
   @Get('findOne')
@@ -66,24 +78,13 @@ export class UserController {
   }
 
   @Get('engineers')
-  @UseGuards(RolesGuard)
+  // @UseGuards(RolesGuard)
   async getFieldEngineers() {
     const fnName = this.getFieldEngineers.name;
 
     this.logger.debug(`${fnName} : Getting all field engineers`);
 
     return await this.userService.getFieldEngineers();
-  }
-
-  @Get('search')
-  @UseGuards(RolesGuard)
-  async searchUsers(@Query('term') searchTerm: string) {
-    const fnName = this.searchUsers.name;
-    const input = `Input : Search term : ${searchTerm}`;
-
-    this.logger.debug(fnName + KEY_SEPARATOR + input);
-
-    return await this.userService.findBySearchTerm(searchTerm);
   }
 
   @Patch()
@@ -100,12 +101,12 @@ export class UserController {
       updateUserDto.updatedBy = userId;
       this.logger.debug(`${fnName} : Calling Update Service`);
 
-      // return await this.userService.update(id, updateUserDto);
+      return await this.userService.update(id, updateUserDto);
     }
   }
 
   @Delete()
-  @UseGuards(RolesGuard)
+  // @UseGuards(RolesGuard)
   async delete(@UserId() userId: string, @Query('id') id: string) {
     const fnName = this.delete.name;
     const input = `Input : Delete user with id : ${id}`;

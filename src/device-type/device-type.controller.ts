@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { DeviceTypeService } from './device-type.service';
 import { CreateDeviceTypeDto, UpdateDeviceTypeDto, FindDeviceTypeDto } from './dto';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { } from '../common/guards/jwt-auth.guard';
 import { UserId } from '../utils/req-user-id-decorator';
 import { createLogger } from '../app_config/logger';
 import { KEY_SEPARATOR, USER_NOT_IN_REQUEST_HEADER, NO_RECORD } from '../app_config/constants';
@@ -19,10 +19,10 @@ import { KEY_SEPARATOR, USER_NOT_IN_REQUEST_HEADER, NO_RECORD } from '../app_con
 export class DeviceTypeController {
   private readonly logger = createLogger(DeviceTypeController.name);
 
-  constructor(private readonly deviceTypeService: DeviceTypeService) {}
+  constructor(private readonly deviceTypeService: DeviceTypeService) { }
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards()
   async create(@UserId() userId: string, @Body() createDeviceTypeDto: CreateDeviceTypeDto) {
     const fnName = this.create.name;
     const input = `Input : ${JSON.stringify(createDeviceTypeDto)}`;
@@ -40,7 +40,7 @@ export class DeviceTypeController {
   }
 
   @Patch()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards()
   async update(
     @UserId() userId: string,
     @Query('id') id: string,
@@ -83,7 +83,7 @@ export class DeviceTypeController {
   }
 
   @Delete()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards()
   async remove(@UserId() userId: string, @Query('id') id: string) {
     const fnName = this.remove.name;
     const input = `Input : DeviceType id : ${id} to be deleted`;
@@ -100,7 +100,7 @@ export class DeviceTypeController {
   }
 
   @Delete('softDelete')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards()
   async softDelete(@UserId() userId: string, @Query('id') id: string) {
     const fnName = this.softDelete.name;
     const input = `Input : DeviceType id : ${id} to be softDeleted`;
@@ -121,7 +121,7 @@ export class DeviceTypeController {
   }
 
   @Patch('restore')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards()
   async restore(@UserId() userId: string, @Query('id') id: string) {
     const fnName = this.restore.name;
     const input = `Input : DeviceType id : ${id} to be restored`;

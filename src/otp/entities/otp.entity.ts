@@ -10,7 +10,7 @@ export class Otp {
     // phone: string;
 
     @Column()
-    email: string;
+    emailId: string;
 
     @Column()
     otpHash: string;

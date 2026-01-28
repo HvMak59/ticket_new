@@ -7,10 +7,12 @@ import { Issue } from './entities/issue.entity';
 import { CreateIssueDto } from './dto/create-issue.dto';
 import { UpdateIssueDto } from './dto/update-issue.dto';
 import { FindIssueDto } from './dto/find-issue.dto';
+import serviceConfig from '../app_config/service.config.json';
 
 @Injectable()
 export class IssueService {
   private readonly logger = createLogger(IssueService.name);
+  private readonly relations = serviceConfig.issue.relations;
 
   constructor(
     @InjectRepository(Issue)
@@ -55,8 +57,8 @@ export class IssueService {
     const input = `Input : Find issue with searchCriteria : ${JSON.stringify(searchCriteria)}`;
     this.logger.debug(fnName + KEY_SEPARATOR + input);
 
-    // const relations = relationsRequired ? ['deviceType', 'manufacturer', 'devices'] : [];
-    return this.repo.find({ where: searchCriteria, order: { name: 'ASC' } });
+    const relations = relationsRequired ? this.relations : [];
+    return this.repo.find({ where: searchCriteria, relations: relations });
   }
 
   async findOneById(id: string) {
@@ -67,8 +69,8 @@ export class IssueService {
 
     const issue = await this.repo.findOne({
       where: { id },
-      relations: ['deviceType', 'manufacturer', 'devices'],
     });
+
     if (!issue) {
       this.logger.error(`${fnName} : ${NO_RECORD} : issue id : ${id} not found`);
       throw new Error(`${NO_RECORD} : issue id : ${id} not found`);
@@ -122,7 +124,7 @@ export class IssueService {
     } else {
       this.logger.debug(`${fnName} : issue id : ${id} restored successfully`);
       const restored = await this.findOneById(id);
-      // restored.deletedBy = undefined;
+      restored.deletedBy = undefined;
       return await this.repo.save(restored);
     }
   }

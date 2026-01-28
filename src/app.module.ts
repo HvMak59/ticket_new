@@ -20,6 +20,10 @@ import { IssueModule } from './issue/issue.module';
 import { CustomerUserModule } from './customer-user/customer-user.module';
 import { DistrictModule } from './district/district.module';
 import { StateModule } from './state/state.module';
+import { APP_GUARD } from '@nestjs/core';
+// import { RolesGuard } from './common';
+import { JwtAuthGuard } from './auth/entities/jwt-auth-guard';
+import { TicketMediaModule } from './ticket-media/ticket-media.module';
 // import { SmsModule } from './sms/sms.module';
 
 @Module({
@@ -61,6 +65,7 @@ import { StateModule } from './state/state.module';
     CustomerModule,
     // CustomerUserModule,
     TicketModule,
+    TicketMediaModule,
     QuotationModule,
     IssueModule,
     EmailModule,
@@ -68,6 +73,16 @@ import { StateModule } from './state/state.module';
     DistrictModule,
     StateModule
   ],
+  // providers: [
+  //   {
+  //     provide: APP_GUARD,
+  //     useClass: JwtAuthGuard, // authentication
+  //   },
+  //   {
+  //     provide: APP_GUARD,
+  //     useClass: RolesGuard, // authorization
+  //   },
+  // ]
 })
 export class AppModule { }
 
@@ -113,6 +128,25 @@ export class AppModule { }
 // for email : 
 // npm install @nestjs/jwt @nestjs/passport passport passport-jwt bcryptjs nodemailer
 // npm install --save-dev @types/bcryptjs
+
+
+
+
+
+// Election : 
+// EPIC : NHJ2231512
+
+
+
+
+// 1 - ivt,invt
+// 2 - invt , sngr
+// 3 - invt, invt, sngr
+// 4 - grwt, grwt
+// 5 - invt, invt
+// 6 - sngrw 
+
+
 
 
 

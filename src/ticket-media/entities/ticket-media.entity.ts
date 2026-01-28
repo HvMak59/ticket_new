@@ -6,7 +6,7 @@ import {
   ManyToOne,
   PrimaryColumn,
 } from 'typeorm';
-import { Ticket } from './ticket.entity';
+import { Ticket } from '../../ticket/entity/ticket.entity';
 import { FileType } from '../../common/enums';
 
 // Re-export for backward compatibility
@@ -18,11 +18,16 @@ export class TicketMedia {
     Object.assign(this, media);
   }
 
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
-  ticketId: string;
+  // @Column()
+  // ticketId: string;
+
+  @ManyToOne(() => Ticket, (ticket) => ticket.ticketMedias, {
+    onDelete: 'CASCADE',
+  })
+  ticket: Ticket;
 
   @Column()
   filePath: string;
@@ -33,12 +38,15 @@ export class TicketMedia {
   @Column({ nullable: true })
   fileName: string;
 
+  @Column()
+  mimeType: string;
+
+  @Column()
+  size: number; // bytes
+
   @Column({ default: false })
   isResolutionProof: boolean;
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
-
-  @ManyToOne(() => Ticket, (ticket) => ticket.ticketMedia)
-  ticket: Ticket;
 }

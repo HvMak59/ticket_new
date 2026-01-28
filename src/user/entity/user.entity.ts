@@ -27,8 +27,8 @@ export class User {
   @Column()
   name: string;
 
-  @Column({ unique: true })
-  email: string;
+  @Column({ nullable: true, unique: true })
+  emailId: string;
 
   @Column({ select: false })
   password: string;
@@ -52,10 +52,10 @@ export class User {
   createdBy: string;
 
   @Column({ nullable: true })
-  updatedBy?: string;
+  updatedBy: string;
 
   @Column({ nullable: true })
-  deletedBy?: string;
+  deletedBy: string;
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
@@ -72,7 +72,6 @@ export class User {
   @BeforeInsert()
   @BeforeUpdate()
   setSearchTerm() {
-    this.searchTerm = this.id + KEY_SEPARATOR + (this.email ?? '');
+    this.searchTerm = this.id + KEY_SEPARATOR + (this.emailId ?? '');
   }
-
 }

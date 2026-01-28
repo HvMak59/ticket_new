@@ -6,13 +6,20 @@ import {
   Body,
   Query,
   UseGuards,
+  Patch,
+  Delete,
+  UseInterceptors,
+  UploadedFiles,
 } from '@nestjs/common';
 import { TicketService } from './ticket.service';
-import { CreateTicketDto, UpdateTicketStatusDto, AssignEngineerDto, FindTicketDto } from './dto';
-import { JwtAuthGuard, RolesGuard, Roles } from '../common';
+import { CreateTicketDto, UpdateTicketStatusDto, FindTicketDto, UpdateTicketDto, AssignTicketDto } from './dto';
+import { FileType, Roles, RoleType } from '../common';
 import { UserId } from '../utils/req-user-id-decorator';
 import { createLogger } from '../app_config/logger';
 import { KEY_SEPARATOR, USER_NOT_IN_REQUEST_HEADER } from '../app_config/constants';
+import { TicketMedia } from 'src/ticket-media/entities/ticket-media.entity';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { TicketMediaInterceptor } from 'src/ticket-media/ticket-media.interceptor';
 
 @Controller('ticket')
 export class TicketController {
@@ -31,31 +38,87 @@ export class TicketController {
   //   return await this.ticketService.create(createTicketDto);
   // }
 
+
+  private check = 4;
+  // @Post()
+  // @UseInterceptors(FilesInterceptor('files'))
+  // @UseInterceptors(TicketMediaInterceptor)
+  // async create(
+  //   @UserId() userId: string,
+  //   @UploadedFiles() files: Express.Multer.File[],
+  //   @Body() createTicketDto: CreateTicketDto,
+  // ) {
+  //   const fnName = this.create.name;
+  //   this.logger.debug(`${fnName} : Input : ${JSON.stringify(createTicketDto)}`);
+
+  //   if (!userId) {
+  //     throw new Error(USER_NOT_IN_REQUEST_HEADER);
+  //   }
+
+  //   if (!files || files.length === 0) {
+  //     throw new Error('At least one media file is required');
+  //   }
+
+  //   // map files → TicketMedia entities
+  //   const medias = files.map(file =>
+  //     new TicketMedia({
+  //       id: crypto.randomUUID(),
+  //       filePath: file.path,          // already uploaded by multer
+  //       fileName: file.originalname,
+  //       mimeType: file.mimetype,
+  //       size: file.size,
+  //       fileType: FileType.IMAGE,
+  //     }),
+  //   );
+
+  //   createTicketDto.createdBy = userId;
+  //   createTicketDto.medias = medias;
+
+  //   return this.ticketService.create(createTicketDto);
+  // }
+
+  @UseInterceptors(TicketMediaInterceptor)
   @Post()
   async create(
     @UserId() userId: string,
-    @Body() createTicketDto: CreateTicketDto
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body() createTicketDto: CreateTicketDto,
   ) {
-    const fnName = this.create.name;
-    const input = `Input : ${JSON.stringify(createTicketDto,)}`;
-
-    this.logger.debug(fnName + KEY_SEPARATOR + input);
-
-    if (userId == null) {
-      this.logger.error(fnName + KEY_SEPARATOR + USER_NOT_IN_REQUEST_HEADER);
-      throw new Error(USER_NOT_IN_REQUEST_HEADER);
-    } else {
-      createTicketDto.createdBy = userId;
-      this.logger.debug(`${fnName} : Calling create service`);
-      return await this.ticketService.create(
-        createTicketDto,
-      );
+    console.log("files", files)
+    if (!userId) {
+      throw new Error('USER_NOT_IN_REQUEST_HEADER');
     }
+
+    createTicketDto.createdBy = userId;
+
+    return this.ticketService.create(createTicketDto, files);
   }
 
+  private thisIsWorking = 5;
+  // @Post()
+  // async create(
+  //   @UserId() userId: string,
+  //   @Body() createTicketDto: CreateTicketDto
+  // ) {
+  //   const fnName = this.create.name;
+  //   const input = `Input : ${JSON.stringify(createTicketDto,)}`;
+
+  //   this.logger.debug(fnName + KEY_SEPARATOR + input);
+
+  //   if (userId == null) {
+  //     this.logger.error(fnName + KEY_SEPARATOR + USER_NOT_IN_REQUEST_HEADER);
+  //     throw new Error(USER_NOT_IN_REQUEST_HEADER);
+  //   } else {
+  //     createTicketDto.createdBy = userId;
+  //     this.logger.debug(`${fnName} : Calling create service`);
+  //     return await this.ticketService.create(
+  //       createTicketDto,
+  //     );
+  //   }
+  // }
+
+
   @Get()
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles(UserRole.ADMIN, UserRole.SERVICE_MANAGER, UserRole.FIELD_ENGINEER)
   async findAll(@Query() findTicketDto: FindTicketDto) {
     const fnName = this.findAll.name;
     const input = `Input : Find Tickets with query : ${JSON.stringify(findTicketDto)}`;
@@ -66,9 +129,19 @@ export class TicketController {
     return await this.ticketService.findAll(findTicketDto);
   }
 
+  @Get('relation')
+  async findAllWthRelation(@Query() findTicketDto: FindTicketDto) {
+    const fnName = this.findAll.name;
+    const input = `Input : Find Tickets with relation with searchCriteria : ${JSON.stringify(findTicketDto)}`;
+
+    this.logger.debug(fnName + KEY_SEPARATOR + input);
+    const relationsRequired = true;
+    this.logger.debug(`${fnName} : Calling findAll service`);
+
+    return await this.ticketService.findAll(findTicketDto, relationsRequired);
+  }
+
   @Get('stats')
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles(UserRole.ADMIN, UserRole.SERVICE_MANAGER, UserRole.FIELD_ENGINEER)
   async getStats() {
     const fnName = this.getStats.name;
 
@@ -78,20 +151,7 @@ export class TicketController {
     return await this.ticketService.getStats();
   }
 
-  @Get('track')
-  async findByTicketNumber(@Query('ticketNumber') ticketNumber: string) {
-    const fnName = this.findByTicketNumber.name;
-    const input = `Input : Find Ticket by ticketNumber : ${ticketNumber}`;
-
-    this.logger.debug(fnName + KEY_SEPARATOR + input);
-    this.logger.debug(`${fnName} : Calling findByTicketNumber service`);
-
-    // return await this.ticketService.findByTicketNumber(ticketNumber);
-  }
-
   @Get('id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles(UserRole.ADMIN, UserRole.SERVICE_MANAGER, UserRole.FIELD_ENGINEER)
   async findOneById(@Query('id') id: string) {
     const fnName = this.findOneById.name;
     const input = `Input : Find Ticket by id : ${id}`;
@@ -113,16 +173,14 @@ export class TicketController {
     return await this.ticketService.getActivities(ticketId);
   }
 
-  @Put('status')
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles(UserRole.ADMIN, UserRole.SERVICE_MANAGER, UserRole.FIELD_ENGINEER)
-  async updateStatus(
+  @Patch()
+  async update(
     @UserId() userId: string,
     @Query('id') id: string,
-    @Body() dto: UpdateTicketStatusDto,
+    @Body() updateTicketDto: UpdateTicketDto,
   ) {
-    const fnName = this.updateStatus.name;
-    const input = `Input : Update Ticket ${id} status : ${JSON.stringify(dto)}`;
+    const fnName = this.update.name;
+    const input = `Input : Id: ${id}, UpdateTicketDto : ${JSON.stringify(updateTicketDto)}`;
 
     this.logger.debug(fnName + KEY_SEPARATOR + input);
 
@@ -130,21 +188,21 @@ export class TicketController {
       this.logger.error(fnName + KEY_SEPARATOR + USER_NOT_IN_REQUEST_HEADER);
       throw new Error(USER_NOT_IN_REQUEST_HEADER);
     } else {
-      this.logger.debug(`${fnName} : Calling updateStatus service`);
-      // return await this.ticketService.updateStatus(id, dto, userId);
+      this.logger.debug(`${fnName} : Calling update service`);
+      return await this.ticketService.update(id, updateTicketDto);
     }
   }
 
-  @Put('assign')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Patch('assignTicket')
+  // @UseGuards(RolesGuard)
   // @Roles(UserRole.ADMIN, UserRole.SERVICE_MANAGER)
-  async assignTo(
+  async assignTicket(
     @UserId() userId: string,
     @Query('id') id: string,
-    @Body() dto: AssignEngineerDto,
+    @Body('assignTo') assignTo: string,
   ) {
-    const fnName = this.assignTo.name;
-    const input = `Input : Assign engineer to ticket ${id} : ${JSON.stringify(dto)}`;
+    const fnName = this.assignTicket.name;
+    const input = `Input : Assign ticket ${id} to : ${assignTo}`;
 
     this.logger.debug(fnName + KEY_SEPARATOR + input);
 
@@ -152,13 +210,64 @@ export class TicketController {
       this.logger.error(fnName + KEY_SEPARATOR + USER_NOT_IN_REQUEST_HEADER);
       throw new Error(USER_NOT_IN_REQUEST_HEADER);
     } else {
-      this.logger.debug(`${fnName} : Calling assignEngineer service`);
-      // return await this.ticketService.assignEngineer(id, dto, userId);
+      this.logger.debug(`${fnName} : Calling assignTo service`);
+      return await this.ticketService.assignTicket(id, assignTo, userId);
+    }
+  }
+
+  @Delete()
+  // @UseGuards( RolesGuard)
+  // @Roles(RoleType.ADMIN, RoleType.SERVICE_MANAGER)
+  async remove(@UserId() userId: string, @Query('id') id: string) {
+    const fnName = this.remove.name;
+    const input = `Input : Ticket id : ${id} to be deleted`;
+
+    this.logger.debug(fnName + KEY_SEPARATOR + input);
+
+    if (userId == null) {
+      this.logger.error(fnName + KEY_SEPARATOR + USER_NOT_IN_REQUEST_HEADER);
+      throw new Error(USER_NOT_IN_REQUEST_HEADER);
+    } else {
+      this.logger.debug(`${fnName} : Calling delete service`);
+      return await this.ticketService.delete(id);
+    }
+  }
+
+
+  @Delete('softDelete')
+  async softDelete(@UserId() userId: string, @Query('id') id: string) {
+    const fnName = this.softDelete.name;
+    const input = `Input : SoftDelete Ticket : ${id}`;
+
+    this.logger.debug(fnName + KEY_SEPARATOR + input);
+
+    if (userId == null) {
+      this.logger.error(fnName + KEY_SEPARATOR + USER_NOT_IN_REQUEST_HEADER);
+      throw new Error(USER_NOT_IN_REQUEST_HEADER);
+    } else {
+      this.logger.debug(`${fnName} : Calling softDelete service`);
+      return await this.ticketService.softDelete(id, userId);
+    }
+  }
+
+  @Delete('restore')
+  async restore(@UserId() userId: string, @Query('id') id: string) {
+    const fnName = this.softDelete.name;
+    const input = `Input : Restore Ticket : ${id}`;
+
+    this.logger.debug(fnName + KEY_SEPARATOR + input);
+
+    if (userId == null) {
+      this.logger.error(fnName + KEY_SEPARATOR + USER_NOT_IN_REQUEST_HEADER);
+      throw new Error(USER_NOT_IN_REQUEST_HEADER);
+    } else {
+      this.logger.debug(`${fnName} : Calling restore service`);
+      return await this.ticketService.restore(id);
     }
   }
 
   @Post('auto-close')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  // @UseGuards(RolesGuard)
   // @Roles(UserRole.ADMIN)
   async triggerAutoClose(@UserId() userId: string) {
     const fnName = this.triggerAutoClose.name;

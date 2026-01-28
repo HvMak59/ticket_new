@@ -5,10 +5,10 @@ import { createLogger } from '../app_config/logger';
 import { KEY_SEPARATOR, NO_RECORD, USER_NOT_IN_REQUEST_HEADER } from '../app_config/constants';
 import { UserId } from '../utils/req-user-id-decorator';
 import { RoleType } from '../common/enums';
-import { JwtAuthGuard, RolesGuard, Roles } from '../common';
+import { Roles } from '../common';
 
 @Controller('role')
-@UseGuards(JwtAuthGuard, RolesGuard)
+// @UseGuards(RolesGuard)
 // @Roles(UserRole.ADMIN)
 export class RoleController {
   private readonly logger = createLogger(RoleController.name);

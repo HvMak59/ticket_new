@@ -168,7 +168,7 @@ export class OtpService {
         return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
     }
 
-    private async sendEmail(email: string, otp: string) {
+    private async sendEmail(emailId: string, otp: string) {
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
             port: 465,
@@ -195,13 +195,13 @@ export class OtpService {
 
         await transporter.sendMail({
             from: '"Herem Technologies" <norelpy@gmail.com>',
-            to: email,
+            to: emailId,
             subject: 'Login OTP',
             text: `Your OTP is ${otp}. It will expire in 5 minutes.`,
         });
     }
 
-    async sendOtp(email: string) {
+    async sendOtp(emailId: string) {
         console.log("In sending service");
         const otp = this.generateOtp();
         const otpHash = await bcrypt.hash(otp, 10);
@@ -210,23 +210,23 @@ export class OtpService {
         expiresAt.setMinutes(expiresAt.getMinutes() + 5); // OTP valid 5 min
 
         const otpRecord = this.repo.create({
-            email,
+            emailId,
             otpHash,
             expiresAt,
         });
 
         await this.repo.save(otpRecord);
 
-        await this.sendEmail(email, otp);
+        await this.sendEmail(emailId, otp);
 
         console.log("Otp sent to email");
 
         return { message: 'OTP sent to email' };
     }
 
-    async verifyOtp(email: string, otp: string) {
+    async verifyOtp(emailId: string, otp: string) {
         const otpRecord = await this.repo.findOne({
-            where: { email },
+            where: { emailId },
             order: { createdAt: 'DESC' },
         });
 
@@ -239,7 +239,7 @@ export class OtpService {
         }
 
         // Check attempts
-        if (otpRecord.attempts >= 5) {
+        if (otpRecord.attempts >= 3) {
             await this.repo.delete({ id: otpRecord.id });
             throw new BadRequestException('Maximum attempts reached');
         }
@@ -257,7 +257,7 @@ export class OtpService {
         await this.repo.save(otpRecord);
 
         // Generate JWT token
-        const token = this.jwtService.sign({ email });
+        const token = this.jwtService.sign({ emailId });
 
         return token;
     }

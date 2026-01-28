@@ -18,7 +18,7 @@ export class UserRoleService {
     private readonly repo: Repository<UserRole>,
   ) { }
 
-  async create(createUserRoleDto: CreateUserRoleDto): Promise<UserRole> {
+  async create(createUserRoleDto: CreateUserRoleDto) {
     const fnName = this.create.name;
     const input = `Input : Create Object : ${JSON.stringify(createUserRoleDto)}`;
 
@@ -40,7 +40,7 @@ export class UserRoleService {
     }
   }
 
-  async findAll(searchCriteria?: FindUserRoleDto): Promise<UserRole[]> {
+  async findAll(searchCriteria?: FindUserRoleDto) {
     console.log("ur service");
     const fnName = this.findAll.name;
     const input = `Input : Find UserRole with searchCriteria : ${JSON.stringify(searchCriteria)}`;
@@ -50,7 +50,7 @@ export class UserRoleService {
     return this.repo.find({ where: searchCriteria });
   }
 
-  async findOneById(id: string): Promise<UserRole> {
+  async findOneById(id: string) {
     const fnName = this.findOneById.name;
     const input = `Input : Find UserRole by id : ${id}`;
 
@@ -64,7 +64,7 @@ export class UserRoleService {
     return userRole;
   }
 
-  async update(id: string, updateUserRoleDto: UpdateUserRoleDto, createdBy: string): Promise<UserRole> {
+  async update(id: string, updateUserRoleDto: UpdateUserRoleDto, createdBy: string) {
     const fnName = this.update.name;
     const input = `Input : Id : ${id}, Update Object : ${JSON.stringify(updateUserRoleDto)}`;
 
@@ -102,7 +102,7 @@ export class UserRoleService {
     userId: string,
     updateUserRoleDTOs: UpdateUserRoleDto[],
     createdBy: string,
-  ): Promise<void> {
+  ) {
     const fnName = this.updateFromUser.name;
     const currentUserRoles = await this.findAll({ userId });
 
@@ -150,7 +150,7 @@ export class UserRoleService {
     }
   }
 
-  async delete(id: string): Promise<any> {
+  async delete(id: string) {
     const fnName = this.delete.name;
     const input = `Input : UserRole id : ${id} to be deleted`;
 
@@ -166,7 +166,7 @@ export class UserRoleService {
     }
   }
 
-  async deleteByUserId(userId: string, deletedBy: string): Promise<any> {
+  async deleteByUserId(userId: string, deletedBy: string) {
     const fnName = this.deleteByUserId.name;
     const input = `Input : Delete all roles for userId : ${userId}`;
 
@@ -224,7 +224,7 @@ export class UserRoleService {
     // return hasRole;
   }
 
-  async findByMultipleUserIds(userIds: string[]): Promise<UserRole[]> {
+  async findByMultipleUserIds(userIds: string[]) {
     const fnName = this.findByMultipleUserIds.name;
     const input = `Input : Find UserRoles for multiple userIds : ${JSON.stringify(userIds)}`;
 

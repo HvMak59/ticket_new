@@ -5,17 +5,19 @@ import { DeviceType } from './entity/device-type.entity';
 import { CreateDeviceTypeDto, UpdateDeviceTypeDto, FindDeviceTypeDto } from './dto';
 import { createLogger } from '../app_config/logger';
 import { DUPLICATE_RECORD, KEY_SEPARATOR, NO_RECORD } from '../app_config/constants';
+import serviceConfig from '../app_config/service.config.json';
 
 @Injectable()
 export class DeviceTypeService {
   private readonly logger = createLogger(DeviceTypeService.name);
+  private readonly relations = serviceConfig.deviceType.relations;
 
   constructor(
     @InjectRepository(DeviceType)
     private readonly repo: Repository<DeviceType>,
-  ) {}
+  ) { }
 
-  async create(createDeviceTypeDto: CreateDeviceTypeDto): Promise<DeviceType> {
+  async create(createDeviceTypeDto: CreateDeviceTypeDto) {
     const fnName = this.create.name;
     const input = `Create Object : ${JSON.stringify(createDeviceTypeDto)}`;
 
@@ -27,12 +29,12 @@ export class DeviceTypeService {
       throw new Error(`${DUPLICATE_RECORD} : DeviceType name : ${deviceType.name} already exists`);
     } else {
       const res = this.repo.create(createDeviceTypeDto);
-      this.logger.debug(`${fnName} : ${JSON.stringify(res)} created`);
+      this.logger.debug(`${fnName} : ${JSON.stringify(res)} tobe created`);
       return await this.repo.save(res);
     }
   }
 
-  async update(id: string, updateDeviceTypeDto: UpdateDeviceTypeDto): Promise<DeviceType> {
+  async update(id: string, updateDeviceTypeDto: UpdateDeviceTypeDto) {
     const fnName = this.update.name;
     const input = `Id : ${id}, Update Object : ${JSON.stringify(updateDeviceTypeDto)}`;
 
@@ -48,22 +50,22 @@ export class DeviceTypeService {
     }
   }
 
-  async findAll(searchCriteria?: FindDeviceTypeDto, relationsRequired: boolean = false): Promise<DeviceType[]> {
+  async findAll(searchCriteria?: FindDeviceTypeDto, relationsRequired: boolean = false) {
     const fnName = this.findAll.name;
     const input = `Input : Find DeviceType with searchCriteria : ${JSON.stringify(searchCriteria)}`;
     this.logger.debug(fnName + KEY_SEPARATOR + input);
 
-    const relations = relationsRequired ? ['deviceModels'] : [];
+    const relations = relationsRequired ? this.relations : [];
     return this.repo.find({ relations, where: searchCriteria, order: { name: 'ASC' } });
   }
 
-  async findOneById(id: string): Promise<DeviceType> {
+  async findOneById(id: string) {
     const fnName = this.findOneById.name;
     const input = `Input : Find DeviceType by id : ${id}`;
 
     this.logger.debug(fnName + KEY_SEPARATOR + input);
 
-    const deviceType = await this.repo.findOne({ where: { id }, relations: ['deviceModels'] });
+    const deviceType = await this.repo.findOne({ where: { id } });
     if (!deviceType) {
       this.logger.error(`${fnName} : ${NO_RECORD} : DeviceType id : ${id} not found`);
       throw new Error(`${NO_RECORD} : DeviceType id : ${id} not found`);
@@ -71,16 +73,8 @@ export class DeviceTypeService {
     return deviceType;
   }
 
-  async findByName(name: string): Promise<DeviceType | null> {
-    const fnName = this.findByName.name;
-    const input = `Input : Find DeviceType by name : ${name}`;
 
-    this.logger.debug(fnName + KEY_SEPARATOR + input);
-
-    return this.repo.findOne({ where: { name } });
-  }
-
-  async delete(id: string): Promise<any> {
+  async delete(id: string) {
     const fnName = this.delete.name;
     const input = `Input : DeviceType id : ${id} to be deleted`;
 
@@ -96,7 +90,7 @@ export class DeviceTypeService {
     }
   }
 
-  async softDelete(id: string, deletedBy: string): Promise<any> {
+  async softDelete(id: string, deletedBy: string) {
     const fnName = this.softDelete.name;
     const input = `Input : DeviceType id : ${id} to be softDeleted`;
     this.logger.debug(fnName + KEY_SEPARATOR + input);
@@ -115,7 +109,7 @@ export class DeviceTypeService {
     }
   }
 
-  async restore(id: string): Promise<DeviceType> {
+  async restore(id: string) {
     const fnName = this.restore.name;
     this.logger.debug(`${fnName} : Restoring DeviceType id : ${id}`);
 
@@ -125,9 +119,10 @@ export class DeviceTypeService {
       throw new Error(`${NO_RECORD} : DeviceType id : ${id} not found`);
     } else {
       this.logger.debug(`${fnName} : DeviceType id : ${id} restored successfully`);
-      const restored = await this.findOneById(id);
-      // restored.deletedBy = undefined;
-      return await this.repo.save(restored);
+      let restored = await this.findOneById(id);
+      restored!.deletedBy = undefined;
+      this.repo.save(restored!);
+      return restored;
     }
   }
 }

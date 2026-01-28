@@ -4,10 +4,10 @@ import { CreateUserRoleDto, UpdateUserRoleDto, FindUserRoleDto } from './dto';
 import { createLogger } from '../app_config/logger';
 import { KEY_SEPARATOR, NO_RECORD, USER_NOT_IN_REQUEST_HEADER } from '../app_config/constants';
 import { UserId } from '../utils/req-user-id-decorator';
-import { JwtAuthGuard, RolesGuard, Roles } from '../common';
+import { Roles } from '../common';
 
 @Controller('user-role')
-@UseGuards(JwtAuthGuard, RolesGuard)
+// @UseGuards(RolesGuard)
 // @Roles(UserRole.ADMIN)
 export class UserRoleController {
   private readonly logger = createLogger(UserRoleController.name);

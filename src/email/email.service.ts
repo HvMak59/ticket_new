@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import { Transporter } from 'nodemailer';
+import { Issue } from 'src/issue/entities/issue.entity';
 
 export interface EmailOptions {
   to: string;
@@ -18,8 +19,8 @@ export class EmailService {
   constructor(private configService: ConfigService) {
     this.transporter = nodemailer.createTransport({
       host: this.configService.get('SMTP_HOST', 'smtp.gmail.com'),
-      port: this.configService.get('SMTP_PORT', 587),
-      secure: this.configService.get('SMTP_SECURE', false),
+      port: this.configService.get('SMTP_PORT'),
+      secure: this.configService.get('SMTP_SECURE'),
       auth: {
         user: this.configService.get('SMTP_USER'),
         pass: this.configService.get('SMTP_PASS'),
@@ -36,6 +37,8 @@ export class EmailService {
         html: options.html,
         text: options.text,
       };
+
+      // console.log(mailOptions);
 
       await this.transporter.sendMail(mailOptions);
       this.logger.log(`Email sent successfully to ${options.to}`);
@@ -116,8 +119,9 @@ export class EmailService {
     engineerName: string,
     ticketNumber: string,
     customerName: string,
-    issueCategory: string,
-    description: string,
+    issue: Partial<Issue>,
+    // issueId: string,
+    // description: string,
   ): Promise<boolean> {
     return this.sendEmail({
       to: engineerEmail,
@@ -127,14 +131,15 @@ export class EmailService {
         <p>A new ticket has been assigned to you.</p>
         <p><strong>Ticket Number:</strong> ${ticketNumber}</p>
         <p><strong>Customer:</strong> ${customerName}</p>
-        <p><strong>Issue Category:</strong> ${issueCategory}</p>
-        <p><strong>Description:</strong> ${description}</p>
+        <p><strong>Issue:</strong> ${issue.name}</p>
+  <p><strong>Description:</strong> ${issue.description}</p>
         <br>
         <p>Please review and take appropriate action.</p>
         <p>Best regards,<br>Hermes Service Team</p>
       `,
     });
   }
+
 
   async sendQuotationNotification(
     customerEmail: string,

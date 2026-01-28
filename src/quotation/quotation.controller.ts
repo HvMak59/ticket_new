@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { QuotationService } from './quotation.service';
 import { CreateQuotationDto, RespondQuotationDto } from './dto';
-import { JwtAuthGuard, RolesGuard, Roles, RoleType } from '../common';
+import { Roles, RoleType } from '../common';
 import { UserId } from '../utils/req-user-id-decorator';
 import { createLogger } from '../app_config/logger';
 import { KEY_SEPARATOR, USER_NOT_IN_REQUEST_HEADER } from '../app_config/constants';

@@ -41,7 +41,6 @@ export class DeviceModel {
     );
   }
 
-
   @Column()
   name: string;
 
@@ -81,7 +80,7 @@ export class DeviceModel {
   updatedBy: string;
 
   @Column({ nullable: true })
-  deletedBy: string;
+  deletedBy?: string;
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;

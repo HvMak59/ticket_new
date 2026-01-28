@@ -10,10 +10,11 @@ import {
 } from '@nestjs/common';
 import { DeviceService } from './device.service';
 import { CreateDeviceDto, UpdateDeviceDto, FindDeviceDto } from './dto';
-import { JwtAuthGuard, RolesGuard, Roles, RoleType } from '../common';
+import { Roles, RoleType } from '../common';
 import { UserId } from '../utils/req-user-id-decorator';
 import { createLogger } from '../app_config/logger';
 import { KEY_SEPARATOR, USER_NOT_IN_REQUEST_HEADER } from '../app_config/constants';
+import { JwtAuthGuard } from 'src/auth/entities/jwt-auth-guard';
 
 @Controller('device')
 export class DeviceController {
@@ -22,8 +23,6 @@ export class DeviceController {
   constructor(private readonly deviceService: DeviceService) { }
 
   @Post()
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles(RoleType.ADMIN, RoleType.SERVICE_MANAGER)
   async create(
     @UserId() userId: string,
     @Body() createDeviceDto: CreateDeviceDto,
@@ -44,8 +43,8 @@ export class DeviceController {
   }
 
   @Patch()
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles(RoleType.ADMIN, RoleType.SERVICE_MANAGER)
+  // @UseGuards( RolesGuard)
+  @Roles(RoleType.ADMIN, RoleType.SERVICE_MANAGER)
   async update(
     @UserId() userId: string,
     @Query('id') id: string,
@@ -77,6 +76,19 @@ export class DeviceController {
     return await this.deviceService.findAll(searchCriteria);
   }
 
+  @Get('relation')
+  async findAllWthRelation(@Query() searchCriteria: FindDeviceDto) {
+    const fnName = this.findAll.name;
+    const input = `Input : Find Device with searchCriteria : ${JSON.stringify(searchCriteria)} with relation.`;
+
+    this.logger.debug(fnName + KEY_SEPARATOR + input);
+    const relationsRequired = true;
+    this.logger.debug(`${fnName} : Calling findAllWthRelation service`);
+
+    return await this.deviceService.findAll(searchCriteria, relationsRequired);
+  }
+
+
   @Get('id')
   async findOneById(@Query('id') id: string) {
     const fnName = this.findOneById.name;
@@ -88,16 +100,6 @@ export class DeviceController {
     return await this.deviceService.findOneById(id);
   }
 
-  @Get('serial')
-  async findBySerialNumber(@Query('serialNumber') serialNumber: string) {
-    const fnName = this.findBySerialNumber.name;
-    const input = `Input : Find Device by serialNumber : ${serialNumber}`;
-
-    this.logger.debug(fnName + KEY_SEPARATOR + input);
-    this.logger.debug(`${fnName} : Calling findBySerialNumber service`);
-
-    return await this.deviceService.findBySerialNumber(serialNumber);
-  }
 
   @Get('warranty')
   async checkWarranty(@Query('id') id: string) {
@@ -112,7 +114,7 @@ export class DeviceController {
   }
 
   @Delete()
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  // @UseGuards( RolesGuard)
   @Roles(RoleType.ADMIN, RoleType.SERVICE_MANAGER)
   async remove(@UserId() userId: string, @Query('id') id: string) {
     const fnName = this.remove.name;
@@ -126,6 +128,41 @@ export class DeviceController {
     } else {
       this.logger.debug(`${fnName} : Calling delete service`);
       return await this.deviceService.delete(id);
+    }
+  }
+
+
+  @Delete('softDelete')
+  async softDelete(@UserId() userId: string, @Query('id') id: string) {
+    const fnName = this.softDelete.name;
+    const input = `Input : SoftDelete Device : ${id}`;
+
+    this.logger.debug(fnName + KEY_SEPARATOR + input);
+
+    if (userId == null) {
+      this.logger.error(fnName + KEY_SEPARATOR + USER_NOT_IN_REQUEST_HEADER);
+      throw new Error(USER_NOT_IN_REQUEST_HEADER);
+    } else {
+      const deviceToBeDeleted = await this.deviceService.findOneById(id);
+      deviceToBeDeleted.deletedBy = userId;
+      this.logger.debug(`${fnName} : Calling softDelete service`);
+      return await this.deviceService.softDelete(id);
+    }
+  }
+
+  @Delete('restore')
+  async restore(@UserId() userId: string, @Query('id') id: string) {
+    const fnName = this.softDelete.name;
+    const input = `Input : Restore Device : ${id}`;
+
+    this.logger.debug(fnName + KEY_SEPARATOR + input);
+
+    if (userId == null) {
+      this.logger.error(fnName + KEY_SEPARATOR + USER_NOT_IN_REQUEST_HEADER);
+      throw new Error(USER_NOT_IN_REQUEST_HEADER);
+    } else {
+      this.logger.debug(`${fnName} : Calling restore service`);
+      return await this.deviceService.restore(id);
     }
   }
 }

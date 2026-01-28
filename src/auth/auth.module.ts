@@ -9,7 +9,7 @@ import { jwtConstants } from './constants';
 import { JwtStrategy } from './entities/jwt-strategy';
 import { UserModule } from 'src/user/user.module';
 import { OtpModule } from 'src/otp/otp.module';
-import { OtpService } from 'src/otp/otp.service';
+import { CustomerModule } from 'src/customer/customer.module';
 
 @Module({
   imports: [
@@ -17,6 +17,7 @@ import { OtpService } from 'src/otp/otp.service';
     HttpModule,
     UserModule,
     OtpModule,
+    CustomerModule,
     JwtModule.register({
       secret: jwtConstants.secret,
       signOptions: { expiresIn: '1d' },

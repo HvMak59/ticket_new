@@ -42,7 +42,7 @@ export class DeviceType {
   updatedBy: string;
 
   @Column({ nullable: true })
-  deletedBy: string;
+  deletedBy?: string;
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;

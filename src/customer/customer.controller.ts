@@ -7,41 +7,98 @@ import {
   Body,
   Query,
   UseGuards,
+  Req,
+  ForbiddenException,
 } from '@nestjs/common';
 import { CustomerService } from './customer.service';
 import { CreateCustomerDto, UpdateCustomerDto, FindCustomerDto } from './dto';
-import { JwtAuthGuard, RolesGuard, Roles, RoleType } from '../common';
+import { Roles, RoleType } from '../common';
 import { UserId } from '../utils/req-user-id-decorator';
 import { createLogger } from '../app_config/logger';
 import { KEY_SEPARATOR, USER_NOT_IN_REQUEST_HEADER } from '../app_config/constants';
+import { JwtService } from '@nestjs/jwt';
+import { JwtAuthGuard } from 'src/auth/entities/jwt-auth-guard';
 
 @Controller('customer')
-@UseGuards(JwtAuthGuard)
+@UseGuards()
 export class CustomerController {
   private readonly logger = createLogger(CustomerController.name);
 
-  constructor(private readonly customerService: CustomerService) { }
+  constructor(
+    private readonly customerService: CustomerService,
+    private readonly jwtService: JwtService,
+  ) { }
+
+  private working = 4;
+  // @Post()
+  // async create(
+  //   // @UserId() userId: string,
+  //   @Body() createCustomerDto: CreateCustomerDto) {
+  //   const fnName = this.create.name;
+  //   const input = `Input : ${JSON.stringify(createCustomerDto)}`;
+
+  //   this.logger.debug(fnName + KEY_SEPARATOR + input);
+
+  //   createCustomerDto.createdBy = createCustomerDto.name;
+  //   this.logger.debug(`${fnName} : Calling Create service`);
+  //   return await this.customerService.create(createCustomerDto);
+  // }
+
 
   @Post()
-  async create(@UserId() userId: string, @Body() createCustomerDto: CreateCustomerDto) {
+  async create(
+    @UserId() userId: string,
+    @Body() createCustomerDto: CreateCustomerDto) {
     const fnName = this.create.name;
     const input = `Input : ${JSON.stringify(createCustomerDto)}`;
 
     this.logger.debug(fnName + KEY_SEPARATOR + input);
 
-    if (userId == null) {
-      this.logger.error(fnName + KEY_SEPARATOR + USER_NOT_IN_REQUEST_HEADER);
-      throw new Error(USER_NOT_IN_REQUEST_HEADER);
-    } else {
-      createCustomerDto.createdBy = userId;
-      this.logger.debug(`${fnName} : Calling Create service`);
-      return await this.customerService.create(createCustomerDto);
-    }
+    createCustomerDto.createdBy = userId;
+    this.logger.debug(`${fnName} : Calling Create service`);
+    return await this.customerService.create(createCustomerDto);
   }
 
+
+  private check = 5;
+  // @Post()
+  // async create(
+  //   @Req() req: any,
+  //   @Body() createCustomerDto: CreateCustomerDto,
+  // ) {
+  //   const fnName = this.create.name;
+
+  //   this.logger.debug(
+  //     `${fnName} : Input : ${JSON.stringify(createCustomerDto)}`,
+  //   );
+
+  //   const user = req.user;
+
+  //   // // Validate TEMP token
+  //   if (!user?.sub) {
+  //     throw new ForbiddenException(
+  //       'Customer already exists',
+  //     );
+  //   }
+  //   // createdBy → self (or email, or other choice)
+  //   // createCustomerDto.createdBy = user.email;
+  //   createCustomerDto.createdBy = createCustomerDto.name;
+
+  //   const customer = await this.customerService.create(createCustomerDto);
+
+  //   const payload = {
+  //     sub: customer.id,
+  //     email: customer.emailId,
+  //     role: RoleType.CUSTOMER,
+  //   };
+
+  //   return {
+  //     accessToken: this.jwtService.sign(payload),
+  //     customer,
+  //   };
+  // }
+
   @Patch()
-  // @UseGuards(RolesGuard)
-  // @Roles(RoleType.ADMIN, RoleType.SERVICE_MANAGER)
   async update(
     @UserId() userId: string,
     @Query('id') id: string,
@@ -63,8 +120,6 @@ export class CustomerController {
   }
 
   @Get()
-  // @UseGuards(RolesGuard)
-  // @Roles(RoleType.ADMIN, RoleType.SERVICE_MANAGER, RoleType.FIELD_ENGINEER)
   async findAll(@Query() searchCriteria: FindCustomerDto) {
     const fnName = this.findAll.name;
     const input = `Input : Find Customer with searchCriteria : ${JSON.stringify(searchCriteria)}`;
@@ -75,9 +130,19 @@ export class CustomerController {
     return await this.customerService.findAll(searchCriteria);
   }
 
+  @Get('relations')
+  async findAllWthRelations(@Query() searchCriteria: FindCustomerDto) {
+    const fnName = this.findAllWthRelations.name;
+    const input = `Input : Find Customer with where searchCriteria : ${JSON.stringify(searchCriteria)}`;
+
+    this.logger.debug(fnName + KEY_SEPARATOR + input);
+    const relationsRequired = true;
+
+    this.logger.debug(`${fnName} : Calling findAll service`);
+    return await this.customerService.findAll(searchCriteria, relationsRequired);
+  }
+
   @Get('id')
-  // @UseGuards(RolesGuard)
-  // @Roles(RoleType.ADMIN, RoleType.SERVICE_MANAGER, RoleType.FIELD_ENGINEER)
   async findOneById(@Query('id') id: string) {
     const fnName = this.findOneById.name;
     const input = `Input : Find Customer by id : ${id}`;
@@ -88,22 +153,7 @@ export class CustomerController {
     return await this.customerService.findOneById(id);
   }
 
-  @Get('phone')
-  // @UseGuards(RolesGuard)
-  // @Roles(RoleType.ADMIN, RoleType.SERVICE_MANAGER, RoleType.FIELD_ENGINEER)
-  async findByPhone(@Query('phone') phone: string) {
-    const fnName = this.findByPhone.name;
-    const input = `Input : Find Customer by phone : ${phone}`;
-
-    this.logger.debug(fnName + KEY_SEPARATOR + input);
-    this.logger.debug(`${fnName} : Calling findByPhone service`);
-
-    // return await this.customerService.findByPhone(phone);
-  }
-
   @Delete()
-  // @UseGuards(RolesGuard)
-  // @Roles(RoleType.ADMIN, RoleType.SERVICE_MANAGER)
   async remove(@UserId() userId: string, @Query('id') id: string) {
     const fnName = this.remove.name;
     const input = `Input : Customer id : ${id} to be deleted`;
@@ -119,46 +169,37 @@ export class CustomerController {
     }
   }
 
-  //  @Delete('softDelete')
-  // async softDelete(@UserId() userId: string, @Query('id') id: string) {
-  //   const fnName = this.softDelete.name;
-  //   const input = `Input : Customer id : ${id} to be softDeleted`;
+  @Delete('softDelete')
+  async softDelete(@UserId() userId: string, @Query('id') id: string) {
+    const fnName = this.softDelete.name;
+    const input = `Input : SoftDelete Customer : ${id}`;
 
-  //   // this.logger.debug(fnName + KEY_SEPARATOR + input);
+    this.logger.debug(fnName + KEY_SEPARATOR + input);
 
-  //   if (userId == null) {
-  //     // this.logger.error(fnName + KEY_SEPARATOR + USER_NOT_IN_REQUEST_HEADER);
-  //     throw Error(USER_NOT_IN_REQUEST_HEADER);
-  //   } else {
-  //     let CustomerToBeSoftDeleted = await this.CustomerService.findOneById(id);
-  //     if (CustomerToBeSoftDeleted) {
-  //       CustomerToBeSoftDeleted.deletedBy = userId;
-  //       // this.logger.debug(`${fnName} : Calling softDelete service`);
-  //       return await this.CustomerService.softDelete(
-  //         id,
-  //         CustomerToBeSoftDeleted,
-  //       );
-  //     } else {
-  //       // this.logger.error(`${fnName} : Customer id : ${id} not found`);
-  //       throw new Error(`Customer id : ${id} not found`);
-  //     }
-  //   }
-  // }
+    if (userId == null) {
+      this.logger.error(fnName + KEY_SEPARATOR + USER_NOT_IN_REQUEST_HEADER);
+      throw new Error(USER_NOT_IN_REQUEST_HEADER);
+    } else {
+      const CustomerToBeDeleted = await this.customerService.findOneById(id);
+      CustomerToBeDeleted.deletedBy = userId;
+      this.logger.debug(`${fnName} : Calling softDelete service`);
+      return await this.customerService.softDelete(id);
+    }
+  }
 
-  // @Patch('restore')
-  // async restore(@UserId() userId: string, @Query('id') id: string) {
-  //   const fnName = this.restore.name;
-  //   const input = `Input : Customer id : ${id} to be restored`;
+  @Delete('restore')
+  async restore(@UserId() userId: string, @Query('id') id: string) {
+    const fnName = this.softDelete.name;
+    const input = `Input : Restore Customer : ${id}`;
 
-  //   // this.logger.debug(fnName + KEY_SEPARATOR + input);
+    this.logger.debug(fnName + KEY_SEPARATOR + input);
 
-  //   if (userId == null) {
-  //     // this.logger.error(fnName + KEY_SEPARATOR + USER_NOT_IN_REQUEST_HEADER);
-  //     throw Error(USER_NOT_IN_REQUEST_HEADER);
-  //   } else {
-  //     // this.logger.debug(`${fnName} : Calling restore service`);
-  //     const restored = await this.CustomerService.restore(id);
-  //     return restored;
-  //   }
-  // }
+    if (userId == null) {
+      this.logger.error(fnName + KEY_SEPARATOR + USER_NOT_IN_REQUEST_HEADER);
+      throw new Error(USER_NOT_IN_REQUEST_HEADER);
+    } else {
+      this.logger.debug(`${fnName} : Calling restore service`);
+      return await this.customerService.restore(id);
+    }
+  }
 }

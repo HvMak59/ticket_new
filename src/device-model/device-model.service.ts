@@ -5,10 +5,12 @@ import { DeviceModel } from './entity/device-model.entity';
 import { CreateDeviceModelDto, UpdateDeviceModelDto, FindDeviceModelDto } from './dto';
 import { createLogger } from '../app_config/logger';
 import { DUPLICATE_RECORD, KEY_SEPARATOR, NO_RECORD } from '../app_config/constants';
+import serviceConfig from '../app_config/service.config.json';
 
 @Injectable()
 export class DeviceModelService {
   private readonly logger = createLogger(DeviceModelService.name);
+  private readonly relations = serviceConfig.deviceModel.relations;
 
   constructor(
     @InjectRepository(DeviceModel)
@@ -17,14 +19,15 @@ export class DeviceModelService {
 
   async create(createDeviceModelDto: CreateDeviceModelDto) {
     const fnName = this.create.name;
-    const input = `Create Object : ${JSON.stringify(createDeviceModelDto)}`;
+    const input = `Input: Create Object : ${JSON.stringify(createDeviceModelDto)}`;
 
     this.logger.debug(fnName + KEY_SEPARATOR + input);
 
     const deviceManufacturerId = createDeviceModelDto.deviceManufacturerId;
+    const deviceTypeId = createDeviceModelDto.deviceTypeId;
     const name = createDeviceModelDto.name;
 
-    const result = await this.repo.findOneBy({ deviceManufacturerId, name });
+    const result = await this.repo.findOneBy({ deviceManufacturerId, deviceTypeId, name });
     if (result) {
       this.logger.error(`${fnName} : ${DUPLICATE_RECORD} : DeviceModel ${result.id} already exists`);
       throw new Error(`${DUPLICATE_RECORD} : DeviceModel ${result.id} already exists`);
@@ -35,13 +38,13 @@ export class DeviceModelService {
     }
   }
 
-  async update(id: string, updateDeviceModelDto: UpdateDeviceModelDto): Promise<DeviceModel> {
+  async update(id: string, updateDeviceModelDto: UpdateDeviceModelDto) {
     const fnName = this.update.name;
     const input = `Id : ${id}, Update Object : ${JSON.stringify(updateDeviceModelDto)}`;
 
     this.logger.debug(fnName + KEY_SEPARATOR + input);
 
-    const mergedDeviceModel = await this.repo.preload({ id, ...updateDeviceModelDto });
+    const mergedDeviceModel = await this.repo.preload(updateDeviceModelDto);
     if (mergedDeviceModel == null) {
       this.logger.error(`${fnName} : ${NO_RECORD} : DeviceModel id : ${id} not found`);
       throw new Error(`${NO_RECORD} : DeviceModel id : ${id} not found`);
@@ -51,17 +54,16 @@ export class DeviceModelService {
     }
   }
 
-  async findAll(searchCriteria: FindDeviceModelDto, relationsRequired: boolean = true): Promise<DeviceModel[]> {
+  async findAll(searchCriteria: FindDeviceModelDto, relationsRequired: boolean = true) {
     const fnName = this.findAll.name;
     const input = `Input : Find DeviceModel with searchCriteria : ${JSON.stringify(searchCriteria)}`;
     this.logger.debug(fnName + KEY_SEPARATOR + input);
 
-    // const relations = relationsRequired ? ['deviceType', 'manufacturer', 'devices'] : [];
-    const relations = ["deviceType", "deviceManufacturer", "devices"]
-    return this.repo.find({ relations: relations, where: searchCriteria, order: { name: 'ASC' } });
+    const relations = relationsRequired ? this.relations : [];
+    return this.repo.find({ relations: relations, where: searchCriteria });
   }
 
-  async findOneById(id: string): Promise<DeviceModel> {
+  async findOneById(id: string) {
     const fnName = this.findOneById.name;
     const input = `Input : Find DeviceModel by id : ${id}`;
 
@@ -69,8 +71,8 @@ export class DeviceModelService {
 
     const deviceModel = await this.repo.findOne({
       where: { id },
-      relations: ['deviceType', 'manufacturer', 'devices'],
     });
+
     if (!deviceModel) {
       this.logger.error(`${fnName} : ${NO_RECORD} : DeviceModel id : ${id} not found`);
       throw new Error(`${NO_RECORD} : DeviceModel id : ${id} not found`);
@@ -78,31 +80,7 @@ export class DeviceModelService {
     return deviceModel;
   }
 
-  async findByManufacturer(deviceManufacturerId: string): Promise<DeviceModel[]> {
-    const fnName = this.findByManufacturer.name;
-    const input = `Input : Find DeviceModel by manufacturerId : ${deviceManufacturerId}`;
-
-    this.logger.debug(fnName + KEY_SEPARATOR + input);
-
-    return this.repo.find({
-      where: { deviceManufacturerId },
-      relations: ['deviceType', 'manufacturer'],
-    });
-  }
-
-  async findByDeviceType(deviceTypeId: string): Promise<DeviceModel[]> {
-    const fnName = this.findByDeviceType.name;
-    const input = `Input : Find DeviceModel by deviceTypeId : ${deviceTypeId}`;
-
-    this.logger.debug(fnName + KEY_SEPARATOR + input);
-
-    return this.repo.find({
-      where: { deviceTypeId },
-      relations: ['deviceType', 'manufacturer'],
-    });
-  }
-
-  async delete(id: string): Promise<any> {
+  async delete(id: string) {
     const fnName = this.delete.name;
     const input = `Input : DeviceModel id : ${id} to be deleted`;
 
@@ -137,7 +115,7 @@ export class DeviceModelService {
     }
   }
 
-  async restore(id: string): Promise<DeviceModel> {
+  async restore(id: string) {
     const fnName = this.restore.name;
     this.logger.debug(`${fnName} : Restoring DeviceModel id : ${id}`);
 
@@ -147,9 +125,10 @@ export class DeviceModelService {
       throw new Error(`${NO_RECORD} : DeviceModel id : ${id} not found`);
     } else {
       this.logger.debug(`${fnName} : DeviceModel id : ${id} restored successfully`);
-      const restored = await this.findOneById(id);
-      // restored.deletedBy = undefined;
-      return await this.repo.save(restored);
+      let restored = await this.findOneById(id);
+      restored!.deletedBy = undefined;
+      this.repo.save(restored!);
+      return restored;
     }
   }
 }
