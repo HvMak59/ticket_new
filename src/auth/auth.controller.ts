@@ -27,6 +27,7 @@ export class AuthController {
 
   @Post('login-otp')
   async loginWithOtp(@Body() dto: VerifyOtpDto) {
+    console.log("in otp login controller");
     return this.authService.loginWithOtp(dto);
     // // const valid = await this.otpService.verifyOtp(dto.phone, dto.otp);
     // const valid = await this.otpService.verifyOtp(dto.email, dto.otp);

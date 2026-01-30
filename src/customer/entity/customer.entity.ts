@@ -36,7 +36,7 @@ export class Customer {
   @Column()
   name: string;
 
-  @Column({ unique: true })
+  @Column()
   phoneNumber: string;
 
   @Column({ nullable: true })

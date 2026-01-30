@@ -194,7 +194,7 @@ export class OtpService {
         // const transporter = nodemailer.createTransport(transportOptions);
 
         await transporter.sendMail({
-            from: '"Herem Technologies" <norelpy@gmail.com>',
+            from: '"Hermes Technologies" <norelpy@gmail.com>',
             to: emailId,
             subject: 'Login OTP',
             text: `Your OTP is ${otp}. It will expire in 5 minutes.`,

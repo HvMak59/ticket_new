@@ -41,8 +41,15 @@ export class RolesGuard implements CanActivate {
     }
 
     const { user } = context.switchToHttp().getRequest();
+    console.log(user)
 
-    const hasRole = requiredRoles.some((role) => user.roles?.includes(role));
+    if (!user || !user.roles) {
+      console.error("User object not found on request. Ensure JwtAuthGuard is running correctly.");
+      return false;
+    }
+
+    // const hasRole = request.user.role.some((r: any) => requiredRoles.includes(r.roleId));
+    const hasRole = requiredRoles.some((role) => user.roles.includes(role))
 
     if (!hasRole) {
       throw new ForbiddenException('You do not have the necessary permissions');

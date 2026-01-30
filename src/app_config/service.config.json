@@ -58,5 +58,14 @@
       "district",
       "tickets"
     ]
+  },
+  "ticket": {
+    "serviceName": "Ticket",
+    "relations": [
+      "device",
+      "issue",
+      "quotations",
+      "ticketMedias"
+    ]
   }
 }

@@ -2,7 +2,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { v4 as uuid } from 'uuid';
 import { unlink } from 'fs/promises';
 import { FileType, TicketMedia } from './entities/ticket-media.entity';
 import { CreateTicketMediaDto } from './dto/create-ticket.dto';
@@ -39,14 +38,17 @@ export class TicketMediaService {
 
     buildFromFiles(
         files: Express.Multer.File[],
-    ): TicketMedia[] {
+    ) {
         return files.map((file) =>
             this.repo.create({
                 filePath: file.path, // set by interceptor
                 fileName: file.originalname,
                 mimeType: file.mimetype,
                 size: file.size,
-                fileType: FileType.IMAGE,
+                // fileType: FileType.IMAGE,
+                fileType: file.mimetype.startsWith('image/')
+                    ? FileType.IMAGE
+                    : FileType.VIDEO,
             }),
         );
     }
@@ -55,6 +57,15 @@ export class TicketMediaService {
         const media = await this.repo.findOneBy({ id });
         if (!media) throw new NotFoundException('File not found');
         return media;
+    }
+    async findAll() {
+        // return await this.repo.find();
+        const medias = await this.repo.find();
+
+        return medias.map(m => ({
+            ...m,
+            fileUrl: `http://localhost:3000/uploads/${m.filePath}`,
+        }));
     }
 
     async delete(id: string) {

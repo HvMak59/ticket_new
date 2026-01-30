@@ -62,6 +62,7 @@ export class AuthService {
       role: user.userRoles
       // roles    //change role guard accordingly 
     };
+    // console.log(payload);
     return this.jwtService.sign(payload);
   }
 
@@ -133,6 +134,7 @@ export class AuthService {
 
   private working = 5;
   async loginWithOtp(dto: VerifyOtpDto) {
+    console.log("in otp login service");
     const valid = await this.otpService.verifyOtp(dto.emailId, dto.otp);
 
     if (!valid) {
@@ -140,29 +142,43 @@ export class AuthService {
     }
 
     const customer = await this.customerService.findOne({ emailId: dto.emailId });
+    console.log(customer);
     if (customer) {
-      const payload = {
-        sub: customer.id,
-        email: customer.emailId,
-        role: RoleType.CUSTOMER,
-      };
+      // const payload = {
+      //   sub: customer.id,
+      //   emailId: customer.emailId,
+      //   role: RoleType.CUSTOMER,
+      // };
 
-      return {
-        accessToken: this.jwtService.sign(payload),
-        isNewCustomer: false,
-      };
+      const payload = {
+        username: customer.name,
+        sub: customer.id,
+        role: RoleType.CUSTOMER
+      }
+
+      // return {
+      //   accessToken: this.jwtService.sign(payload),
+      //   // isNewCustomer: false,
+      // };
+      return this.jwtService.sign(payload);
     }
 
     const payload = {
+      // sub: dto.emailId,
+      // emailId: dto.emailId,
+      // role: RoleType.CUSTOMER
+
+      username: dto.emailId,
       sub: dto.emailId,
-      email: dto.emailId,
       role: RoleType.CUSTOMER
     };
 
-    return {
-      accessToken: this.jwtService.sign(payload),
-      isNewCustomer: true,
-    };
+    console.log(payload)
+    // return {
+    //   accessToken: this.jwtService.sign(payload),
+    //   // isNewCustomer: true,
+    // };
+    return this.jwtService.sign(payload);
   }
 
 

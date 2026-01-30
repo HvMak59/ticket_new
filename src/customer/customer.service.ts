@@ -6,6 +6,8 @@ import { CreateCustomerDto, UpdateCustomerDto, FindCustomerDto } from './dto';
 import { createLogger } from '../app_config/logger';
 import { DUPLICATE_RECORD, KEY_SEPARATOR, NO_RECORD } from '../app_config/constants';
 import serviceConfig from '../app_config/service.config.json';
+import { RoleType } from 'src/common';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class CustomerService {
@@ -15,6 +17,7 @@ export class CustomerService {
   constructor(
     @InjectRepository(Customer)
     private readonly repo: Repository<Customer>,
+    private readonly jwtService: JwtService,
   ) { }
 
   async create(createCustomerDto: CreateCustomerDto) {
@@ -31,7 +34,16 @@ export class CustomerService {
     } else {
       const customer = this.repo.create(createCustomerDto);
       this.logger.debug(`${fnName} : ToBeCreated Customer is : ${JSON.stringify(customer)}`);
-      return await this.repo.save(customer);
+      const savedCustomer = await this.repo.save(customer);
+
+      if (savedCustomer) {
+        const payload = {
+          username: customer.name,
+          sub: customer.id,
+          role: RoleType.CUSTOMER
+        }
+        return this.jwtService.sign(payload);
+      }
     }
   }
 

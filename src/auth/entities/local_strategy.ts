@@ -18,8 +18,9 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(username: string, password: string) {
-    const user = await this.userService.findOneWithPassword({ id: username });
-    // console.log("user", user)
+    // const user = await this.userService.findOneWithPassword({ id: username });
+    const user = await this.userService.findOneWithPasswordd({ id: username });
+    console.log("local strategy user", user);
     const encryptedPassword = await bcrypt.hash(password, NO_OF_SALTS);
     if (user) {
       const hasPwdMatched = await bcrypt.compare(password, user.password);

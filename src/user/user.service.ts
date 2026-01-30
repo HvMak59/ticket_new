@@ -250,6 +250,21 @@ export class UserService {
     //}
   }
 
+  findOneWithPasswordd(searchUser: FindUserDto) {
+    return this.repo.findOne({
+      where: searchUser,
+      select: {
+        id: true,
+        name: true,
+        password: true,
+        userRoles: true
+      },
+      relations: ['userRoles']
+    });
+  }
+
+
+
   findOneWithPassword(searchUser: FindUserDto) {
     return this.repo
       .createQueryBuilder('user')

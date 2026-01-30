@@ -25,7 +25,7 @@ import { join } from 'path';
 export class TicketService {
   private readonly logger = createLogger(TicketService.name);
 
-  private readonly relations = serviceConfig.device.relations;
+  private readonly relations = serviceConfig.ticket.relations;
 
   constructor(
     @InjectRepository(Ticket)
@@ -74,361 +74,6 @@ export class TicketService {
 
     return `SR-${year}-${String(seq).padStart(6, '0')}`;
   }
-
-
-  //   async create(createTicketDto: CreateTicketDto): Promise<Ticket> {
-  //     const fnName = this.create.name;
-  //     const input = `Input : Create Ticket : ${JSON.stringify(createTicketDto)}`;
-
-  //     this.logger.debug(fnName + KEY_SEPARATOR + input);
-
-  //     const createDeviceDto = {
-  //   serialNumber: createTicketDto.serialNumber,
-  //       deviceModelId: createTicketDto.deviceModelId,
-  //       otherModelNumber: createTicketDto.otherModelNumber,
-  //       deviceManufacturerId: createTicketDto.devicmanufacturerId,
-  //       deviceTypeId: createTicketDto.deviceType,
-  //     }
-  //     const device = await this.deviceService.findOrCreate({
-
-  //     });
-  // // deviceid, dmodlid, dvcmfgid,dvctypid,
-  //     const customer = await this.customerService.findOrCreate({
-  //       name: createTicketDto.customerName,
-  //       phoneNumber: createTicketDto.customerPhone,
-  //       email: createTicketDto.customerEmail,
-  //       address: createTicketDto.customerAddress,
-  //     });
-
-  //     const isUnderWarranty = await this.deviceService.isUnderWarranty(device.id);
-  //     const id = await this.generateid();
-
-  //     const ticket = this.repo.create({
-  //       id,
-  //       deviceId: device.id,
-  //       customerId: customer.id,
-  //       issueId: createTicketDto.issueId,
-  //       description: createTicketDto.description,
-  //       // isChargeable: !isUnderWarranty,
-  //       status: TicketStatus.OPEN,
-  //     });
-
-  //     const savedTicket = await this.repo.save(ticket);
-  //     this.logger.debug(`${fnName} : Ticket created with number : ${id}`);
-
-  //     await this.logActivity(savedTicket.id, 'Ticket Created', 'New service ticket has been created', null);
-
-  //     if (customer.email) {
-  //       await this.emailService.sendTicketCreatedNotification(customer.email, customer.name, id);
-  //     }
-
-  //     return this.findOneById(savedTicket.id);
-  //   }
-
-  private shouldCheck = 5;
-  // async create(createTicketDto: CreateTicketDto) {
-  //   const fnName = this.create.name;
-  //   const input = `Input : Create Ticket : ${JSON.stringify(createTicketDto)}`;
-  //   this.logger.debug(fnName + KEY_SEPARATOR + input);
-
-  //   const device = await this.deviceService.findOrCreate({
-  //     id: createTicketDto.deviceId,
-  //     serialNumber: createTicketDto.serialNumber,
-  //     deviceModelId: createTicketDto.deviceModelId,
-  //     otherModelNumber: createTicketDto.otherModelNumber,
-  //     deviceManufacturerId: createTicketDto.deviceManufacturerId,
-  //   });
-
-  //   const customer = await this.customerService.findOrCreate({
-  //     name: createTicketDto.customerName,
-  //     phoneNumber: createTicketDto.customerPhone,
-  //     email: createTicketDto.customerEmail,
-  //     address: createTicketDto.customerAddress,
-  //   });
-
-
-  //   const ticket = this.repo.create({
-  //     customerId: customer.id,
-  //     raisedById: createTicketDto.raisedById ?? null,
-
-  //     status: TicketStatus.OPEN,
-
-  //     deviceId: device?.id ?? null,
-  //     deviceManufacturerId: createTicketDto.deviceManufacturerId ?? null,
-  //     deviceModelId: createTicketDto.deviceModelId ?? null,
-  //     deviceTypeId: createTicketDto.deviceTypeId ?? null,
-
-  //     issueId: createTicketDto.issueId ?? null,
-  //     note: createTicketDto.note ?? null,
-  //     dateOfPurchase: createTicketDto.dateOfPurchase ?? null,
-  //   });
-
-  //   const savedTicket = await this.repo.save(ticket);
-
-  //   // this.logger.debug(`${fnName} : Ticket created with ID : ${savedTicket.id}`);
-
-  //   await this.logActivity(
-  //     // savedTicket.id,
-  //     '',
-  //     'Ticket Created',
-  //     'New service ticket has been created',
-  //     null,
-  //   );
-
-  //   /* ===========================
-  //      5. Email Notification
-  //      =========================== */
-  //   if (customer.email) {
-  //     await this.emailService.sendTicketCreatedNotification(
-  //       customer.email,
-  //       customer.name,
-  //       // savedTicket.id,
-  //       ''
-  //     );
-  //   }
-
-  //   return savedTicket;
-  // }
-
-  private woking = 1;
-  // async create(createTicketDto: CreateTicketDto) {
-  //   const fnName = this.create.name;
-  //   this.logger.debug(`${fnName} : Creating ticket`);
-
-  //   const device = await this.deviceService.findOrCreate({
-  //     id: createTicketDto.id,
-  //     serialNumber: createTicketDto.serialNumber,
-  //     deviceManufacturerId: createTicketDto.deviceManufacturerId,
-  //     deviceModelId: createTicketDto.deviceModelId,
-  //     otherModelNumber: createTicketDto.otherModelNumber,
-  //   });
-
-  //   const id = await this.generateId();
-
-  //   // const issueId: string | null = createTicketDto.issueId ?? null;
-
-  //   const issueId: string | null = createTicketDto.issueId ?? null;
-  //   const isOtherIssue = !createTicketDto.issueId;
-
-  //   const ticket = this.repo.create({
-  //     ...createTicketDto,
-  //     id,
-  //     deviceId: device.id,
-  //     issueId,
-  //     isOtherIssue,
-  //     status: TicketStatus.OPEN,
-  //   });
-
-  //   // let issueId: string | null = null;
-  //   //     let isOtherIssue = false;
-
-  //   //     if (createTicketDto.issueId) {
-  //   //       // Predefined issue
-  //   //       issueId = createTicketDto.issueId;
-  //   //     } else {
-  //   //       // Customer typed issue
-  //   //       isOtherIssue = true;
-  //   //     }
-
-  //   //     const ticket = this.repo.create({
-  //   //       ...createTicketDto,
-  //   //       id,
-  //   //       deviceId: device.id,
-  //   //       issueId,
-  //   //       isOtherIssue,
-  //   //       status: TicketStatus.OPEN,
-  //   //     });
-
-  //   const savedTicket = await this.repo.save(ticket);
-
-  //   this.logger.debug(`${fnName} : Ticket created with id : ${savedTicket.id}`);
-
-  //   await this.logActivity(
-  //     savedTicket.id,
-  //     'Ticket Created',
-  //     'New service ticket has been created',
-  //     null,
-  //   );
-
-  //   return savedTicket;
-  // }
-
-  private lastWorking = 4;
-  // async create(createTicketDto: CreateTicketDto) {
-  //   const fnName = this.create.name;
-  //   this.logger.debug(`${fnName} : Creating ticket`);
-
-  //   const findOrCreateDeviceDto = {
-  //     id: createTicketDto.id,
-  //     serialNumber: createTicketDto.serialNumber,
-  //     deviceManufacturerId: createTicketDto.deviceManufacturerId,
-  //     deviceModelId: createTicketDto.deviceModelId,
-  //     otherModelNumber: createTicketDto.otherModelNumber,
-  //   }
-  //   const device = await this.deviceService.findOrCreate(findOrCreateDeviceDto);
-
-  //   const id = await this.generateId();
-
-  //   const issueId: string | null = createTicketDto.issueId ?? null;
-  //   const isOtherIssue: boolean = !createTicketDto.issueId;
-  //   const otherIssueId: string | undefined = isOtherIssue ? createTicketDto.otherIssueId : undefined;
-  //   const otherIssueDesc: string | undefined = isOtherIssue ? createTicketDto.otherIssueDesc : undefined;
-
-  //   const isOtherManufacturer: boolean = !createTicketDto.deviceManufacturerId && !!createTicketDto.otherManufacturerName;
-  //   const isOtherModel: boolean = !createTicketDto.deviceModelId && !!createTicketDto.otherDeviceModelName;
-
-  //   const ticket = this.repo.create({
-  //     ...createTicketDto,
-  //     id,
-  //     deviceId: device.id,
-  //     issueId,
-  //     // isOtherIssue,
-  //     otherIssueId,
-  //     otherIssueDesc,
-  //     // isOtherManufacturer,
-  //     // isOtherModel,
-  //     status: TicketStatus.UNDER_REVIEW,
-  //   });
-
-  //   const savedTicket = await this.repo.save(ticket);
-  //   this.logger.debug(`${fnName} : Ticket created with id : ${savedTicket.id}`);
-
-  //   // await this.logActivity(
-  //   //   savedTicket.id,
-  //   //   'Ticket Created',
-  //   //   'New service ticket has been created',
-  //   //   null,
-  //   // );
-
-  //   return savedTicket;
-  // }
-
-  private mysimplified = 4
-  // async create(createTicketDto: CreateTicketDto) {
-  //   const fnName = this.create.name;
-  //   const input = `Input: creatTicketDto: ${JSON.stringify(createTicketDto)}`;
-
-  //   this.logger.debug(fnName + KEY_SEPARATOR + input);
-
-  //   const record = await this.repo.findOne({
-  //     where: {
-  //       customerId: createTicketDto.customerId,
-  //       issueId: createTicketDto.issueId,
-  //       deviceId: createTicketDto.deviceId
-  //     }
-  //   })
-
-  //   if (record) {
-  //     this.logger.error(`${fnName}: ${DUPLICATE_RECORD}: Ticket already exists`);
-  //     throw new Error(`${DUPLICATE_RECORD}: Ticket already exists`);
-  //   }
-  //   else {
-  //     const issueId = createTicketDto.issueId ?? null;
-  //     const otherIssueId = createTicketDto.otherIssueId ?? undefined;
-  //     const otherIssueDesc = createTicketDto.otherIssueDesc ?? undefined;
-
-  //     const deviceModelId = createTicketDto.deviceModelId;
-  //     const serialNumber = createTicketDto.serialNumber;
-  //     let deviceId = null;
-
-  //     if (deviceModelId) {
-  //       const findDeviceDto: CreateDeviceDto = {
-  //         deviceModelId: deviceModelId,
-  //         serialNumber: serialNumber
-  //       }
-  //       // const device = await this.deviceService.findOne(findDeviceDto);
-  //       const device = await this.deviceService.findOrCreate(findDeviceDto);
-  //       deviceId = device?.id;
-  //     }
-  //     const id = await this.generateId();
-
-  //     const ticket = this.repo.create({
-  //       ...createTicketDto,
-  //       id,
-  //       issueId,
-  //       otherIssueId,
-  //       otherIssueDesc,
-  //       otherDeviceModelName: createTicketDto.otherDeviceModelName,
-  //       otherManufacturerName: createTicketDto.otherManufacturerName
-  //     })
-
-  //     const savedTicket = await this.repo.save(ticket);
-
-  //     this.logger.debug(
-  //       `${fnName} : Ticket created with id : ${savedTicket.id}`,
-  //     );
-
-  //     return savedTicket;
-  //   }
-  // }
-
-
-  private todayCorrectIThink = 4
-  // async create(createTicketDto: CreateTicketDto) {
-  //   const fnName = this.create.name;
-  //   this.logger.debug(`${fnName} :: Input :: ${JSON.stringify(createTicketDto)}`);
-
-  //   let deviceId: string | null = null;
-  //   let issueId: string | null = null;
-
-  //   // handle issue
-  //   if (createTicketDto.issueId) {
-  //     issueId = createTicketDto.issueId;
-  //   }
-
-  //   // handle device creation only if model & serial are present
-  //   if (createTicketDto.device) {
-  //     if (createTicketDto.device.deviceModelId && createTicketDto.device.serialNumber) {
-  //       const device = await this.deviceService.findOrCreate({
-  //         deviceModelId: createTicketDto.device.deviceModelId,
-  //         serialNumber: createTicketDto.device.serialNumber,
-  //       });
-  //       deviceId = device.id;
-  //     }
-
-  //   }
-  //   // duplicate check only when master references exist
-  //   if (createTicketDto.customerId && deviceId && issueId) {
-  //     const duplicate = await this.repo.findOne({
-  //       where: {
-  //         customerId: createTicketDto.customerId,
-  //         deviceId,
-  //         issueId,
-  //       },
-  //     });
-
-  //     if (duplicate) {
-  //       throw new Error(`${DUPLICATE_RECORD}: Ticket already exists`);
-  //     }
-  //   }
-
-  //   const id = await this.generateId();
-
-  //   const createDto: any = {
-  //     ...createTicketDto,
-  //     id: id,
-  //     customerId: createTicketDto.customerId,
-  //     deviceId,
-  //     issueId,
-  //     otherIssueId: createTicketDto.otherIssueId ?? null,
-  //     otherIssueDesc: createTicketDto.otherIssueDesc ?? null,
-  //     otherManufacturerName: createTicketDto.otherManufacturerName ?? null,
-  //     otherDeviceModelName: createTicketDto.otherDeviceModelName ?? null,
-
-  //     dateOfPurchase: createTicketDto.dateOfPurchase ?? null,
-  //     ticketMediaId: createTicketDto.ticketMediaId ?? null,
-  //   }
-  //   const ticket = this.repo.create({
-
-  //   });
-
-  //   const savedTicket = await this.repo.save(ticket);
-
-  //   this.logger.debug(`${fnName} : Ticket Created :: ${savedTicket.id}`);
-
-  //   return savedTicket;
-  // }
-
 
   private workingwithoutMedia = 4
   // async create(createTicketDto: CreateTicketDto) {
@@ -497,7 +142,8 @@ export class TicketService {
       });
       deviceId = device.id;
     }
-    console.log(deviceId);
+    // console.log(deviceId);
+    console.log(createTicketDto.customerId);
 
     if (createTicketDto.customerId && deviceId && issueId) {
       const duplicate = await this.repo.findOne({
@@ -509,6 +155,7 @@ export class TicketService {
       });
 
       if (duplicate) {
+        await this.cleanupFiles(files);
         throw new Error('DUPLICATE_RECORD: Ticket already exists');
       }
     }
@@ -539,9 +186,7 @@ export class TicketService {
     try {
       const movedFiles = await this.moveFilesToFinal(files, ticketId);
 
-      const ticketMedias =
-        this.ticketMediaService.buildFromFiles(movedFiles);
-
+      const ticketMedias = this.ticketMediaService.buildFromFiles(movedFiles);
 
       const ticket = this.repo.create({
         ...createTicketDto,
@@ -553,23 +198,45 @@ export class TicketService {
       return await this.repo.save(ticket);
     } catch (err) {
       await this.cleanupFiles(files);
-      throw err;
+      throw new Error(`Error creating ticket, ${err}`);
     }
   }
 
+
+  // async moveFilesToFinal(
+  //   files: Express.Multer.File[],
+  //   ticketId: string,
+  // ) {
+  //   const targetDir = join(process.cwd(), 'uploads', 'tickets', ticketId);
+  //   await mkdir(targetDir, { recursive: true });
+
+  //   return Promise.all(
+  //     files.map(async (file) => {
+  //       const newPath = join(targetDir, file.filename);
+  //       await rename(file.path, newPath);
+  //       return { ...file, path: newPath };
+  //     }),
+  //   );
+  // }
 
   async moveFilesToFinal(
     files: Express.Multer.File[],
     ticketId: string,
   ) {
-    const targetDir = join(process.cwd(), 'uploads', 'tickets', ticketId);
+    const relativeDir = join('tickets', ticketId);
+    const targetDir = join(process.cwd(), 'uploads', relativeDir);
+
     await mkdir(targetDir, { recursive: true });
 
     return Promise.all(
       files.map(async (file) => {
-        const newPath = join(targetDir, file.filename);
-        await rename(file.path, newPath);
-        return { ...file, path: newPath };
+        const newAbsolutePath = join(targetDir, file.filename);
+        await rename(file.path, newAbsolutePath);
+
+        return {
+          ...file,
+          path: join(relativeDir, file.filename).replace(/\\/g, '/'),
+        };
       }),
     );
   }
@@ -655,7 +322,6 @@ export class TicketService {
 
     const ticket = await this.repo.findOne({
       where: { id },
-      relations: ['device', 'customer', 'issue'],
     });
     if (!ticket) {
       this.logger.error(`${fnName} : ${NO_RECORD} : Ticket id : ${id} not found`);
@@ -677,7 +343,8 @@ export class TicketService {
     ticket.assignedById = userId;
     ticket.assignedTo = ticketTobeAssignedTo;
     ticket.status = TicketStatus.ASSIGNED;
-    const updatedTicket = await this.repo.save(ticket);
+    // const updatedTicket = await this.repo.save(ticket);
+    const updatedTicket = await this.update(id, ticket);
 
     const customer = ticket.customer;
     const engineerName = ticketTobeAssignedTo.name;
@@ -700,12 +367,11 @@ export class TicketService {
         ticket.issue
       );
     }
-
     return updatedTicket;
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-  async autoCloseExpiredTickets(): Promise<number> {
+  async autoCloseExpiredTickets() {
     const fnName = this.autoCloseExpiredTickets.name;
     this.logger.log(`${fnName} : Running auto-close cron job...`);
 
@@ -791,10 +457,19 @@ export class TicketService {
     const input = `Input : Restore Ticket : ${id}`;
 
     this.logger.debug(fnName + KEY_SEPARATOR + input);
-    await this.repo.restore(id);
-    const device = await this.findOneById(id);
-    // device.deletedBy = null;
-    return device;
+    const result = await this.repo.restore(id);
+    if (result.affected === 0) {
+      this.logger.error(
+        `${fnName} : ${NO_RECORD} : Ticket id : ${id} not found`,
+      );
+      throw new Error(`${NO_RECORD} : Ticket id : ${id} not found`);
+    } else {
+      this.logger.debug(`${fnName} Ticket id : ${id} restored successfully`);
+      let restored = await this.findOneById(id);
+      restored!.deletedBy = undefined;
+      this.repo.save(restored!);
+      return restored;
+    }
   }
 
   private async logActivity(ticketId: string, action: string, description: string, performedBy: string | null): Promise<TicketActivity> {

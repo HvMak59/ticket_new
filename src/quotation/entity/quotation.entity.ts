@@ -1,6 +1,5 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
@@ -8,10 +7,8 @@ import {
   PrimaryColumn,
 } from 'typeorm';
 import { Ticket } from '../../ticket/entity/ticket.entity';
-import { User } from '../../user/entity/user.entity';
 import { QuotationStatus } from '../../common/enums';
 
-// Re-export for backward compatibility
 export { QuotationStatus } from '../../common/enums';
 
 export interface LineItem {
@@ -60,3 +57,54 @@ export class Quotation {
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
 }
+
+
+
+
+// @Entity()
+// export class Quotation {
+//   @PrimaryColumn()
+//   id: string;
+
+//   @Column()
+//   ticketId: string;
+
+//   @ManyToOne(() => Ticket, (ticket) => ticket.quotations)
+//   ticket: Ticket;
+
+//   @Column()
+//   pdfPath: string;
+
+//   @Column('decimal', { precision: 10, scale: 2 })
+//   cost: number;
+
+//   @Column({ type: 'enum', enum: QuotationStatus, default: QuotationStatus.DRAFT })
+//   status: QuotationStatus;
+
+//   @Column({ default: 1 })
+//   version: number;
+
+//   @Column({ nullable: true })
+//   parentQuotationId: string;
+
+//   @Column()
+//   createdBy: string;
+
+//   @Column({ nullable: true })
+//   sentBy: string;
+
+//   @Column({ type: 'timestamptz', nullable: true })
+//   sentAt: Date;
+
+//   @Column({ type: 'timestamptz', nullable: true })
+//   customerRespondedAt: Date;
+
+//   @Column({ nullable: true })
+//   customerResponseNote: string;
+
+//   @CreateDateColumn({ type: 'timestamptz' })
+//   createdAt: Date;
+
+//   @UpdateDateColumn({ type: 'timestamptz' })
+//   updatedAt: Date;
+// }

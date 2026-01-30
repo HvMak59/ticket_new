@@ -11,7 +11,7 @@ import { AxiosResponse } from 'axios';
 export function getUserIdFromReq(req: Request) {
   const token = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
   const decodedToken = jwtDecode(token!);
-  // console.log(decodedToken);
+  console.log(decodedToken);
   return decodedToken.sub;
 }
 

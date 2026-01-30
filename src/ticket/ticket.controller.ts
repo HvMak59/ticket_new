@@ -84,13 +84,14 @@ export class TicketController {
     @UploadedFiles() files: Express.Multer.File[],
     @Body() createTicketDto: CreateTicketDto,
   ) {
-    console.log("files", files)
+    // console.log("files", files)
+
     if (!userId) {
       throw new Error('USER_NOT_IN_REQUEST_HEADER');
     }
 
     createTicketDto.createdBy = userId;
-
+    // createTicketDto.customerId = userId;
     return this.ticketService.create(createTicketDto, files);
   }
 

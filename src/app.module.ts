@@ -100,6 +100,7 @@ export class AppModule { }
 
 // punasan :
 // mosquitto_sub -h hermesmqtt.com -t HrmsIOT/NwDrHuRtvSlrV1/info -u hermes -P "4iHuC+=NL6R*t7=YU6Ew" | jq -c "select(.device_id == \"2026010016\")"
+// mosquitto_sub -h hermesmqtt.com -t HermesIOT/DrRtvGrwtV1/info -u hermes -P "4iHuC+=NL6R*t7=YU6Ew" | jq -c "select(.device_id == \"2026010016\")"
 
 
 
@@ -130,13 +131,8 @@ export class AppModule { }
 // npm install --save-dev @types/bcryptjs
 
 
-
-
-
 // Election : 
 // EPIC : NHJ2231512
-
-
 
 
 // 1 - ivt,invt
@@ -147,6 +143,36 @@ export class AppModule { }
 // 6 - sngrw 
 
 
+// Gitlab 
+// git clone https://gitlab.com .....
+// cd apni-repo
+// git pull origin main
+// git checkout -b 'branch-name'
+// now make changes in file 
+// git status  ye command esa kuch dikhayega modified: config/prod.json
+// git add .
+// git commit -m "Update MQTT host in prod config"
+// git push origin 'branch-name'
 
 
+// For Login 
+// Request
+// → LocalAuthGuard
+// → LocalStrategy.validate()
+// → User returned
+// → AuthService.login()
+// → JWT generated
+// → Response
+
+
+// For Protected route 
+// Request
+// → JwtAuthGuard.canActivate()
+// → Passport JWT verification
+// → JwtStrategy.validate()
+// → request.user set
+// → RolesGuard.canActivate()
+// → Role check
+// → Controller method
+// → Response
 

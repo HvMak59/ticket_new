@@ -54,9 +54,15 @@ export class CustomerController {
 
     this.logger.debug(fnName + KEY_SEPARATOR + input);
 
-    createCustomerDto.createdBy = userId;
-    this.logger.debug(`${fnName} : Calling Create service`);
-    return await this.customerService.create(createCustomerDto);
+    if (userId == null) {
+      this.logger.error(fnName + KEY_SEPARATOR + USER_NOT_IN_REQUEST_HEADER);
+      throw new Error(USER_NOT_IN_REQUEST_HEADER);
+    }
+    else {
+      createCustomerDto.createdBy = userId;
+      this.logger.debug(`${fnName} : Calling Create service`);
+      return await this.customerService.create(createCustomerDto);
+    }
   }
 
 
@@ -74,7 +80,6 @@ export class CustomerController {
 
   //   const user = req.user;
 
-  //   // // Validate TEMP token
   //   if (!user?.sub) {
   //     throw new ForbiddenException(
   //       'Customer already exists',

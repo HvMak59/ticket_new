@@ -26,33 +26,33 @@
 
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { extname, join } from 'path';
+import { v4 as uuidv4 } from 'uuid';
 
 export const TicketMediaInterceptor = FilesInterceptor(
-    'files',             // field name from frontend
+    'media',             // field name from frontend
     10,                  // max number of files
     {
         storage: diskStorage({
-            destination: '../images',
+            destination: join(process.cwd(), 'uploads', 'temp'),
             filename: (req, file, cb) => {
-                const uniqueSuffix =
-                    Date.now() + '-' + Math.round(Math.random() * 1e9);
+                const fileName = uuidv4();
+                const extention = extname(file.originalname);
 
-                const ext = extname(file.originalname);
-
-                cb(null, `${uniqueSuffix}${ext}`);
+                cb(null, `${fileName}${extention}`);
             },
         }),
+        // {
+        //         // limits: {
+        //         //     fileSize: 5 * 1024 * 1024,
+        //         // },
 
-        // limits: {
-        //     fileSize: 5 * 1024 * 1024,
-        // },
-
-        fileFilter: (req, file, cb) => {
-            if (!file.mimetype.startsWith('image/')) {
-                cb(new Error('Only images allowed'), false);
-            }
-            cb(null, true);
-        },
+        //         // fileFilter: (req, file, cb) => {
+        //         //     if (!file.mimetype.startsWith('image/')) {
+        //         //         cb(new Error('Only images allowed'), false);
+        //         //     }
+        //         //     cb(null, true);
+        //         // },
+        // }
     },
 );

@@ -91,7 +91,7 @@ export class Ticket {
   updatedBy: string;
 
   @Column({ nullable: true })
-  deletedBy: string;
+  deletedBy?: string;
 
   @DeleteDateColumn({ type: 'timestamptz' })
   deletedAt?: Date;

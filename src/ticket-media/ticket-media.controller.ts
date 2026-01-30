@@ -36,6 +36,11 @@ export class TicketMediaController {
         return res.sendFile(media.filePath);
     }
 
+    @Get()
+    async findAll() {
+        return this.service.findAll()
+    }
+
     // DELETE
     @Delete(':id')
     async delete(@Param('id') id: string) {

@@ -2,11 +2,13 @@ import { KEY_SEPARATOR, NO_RECORD, USER_NOT_IN_REQUEST_HEADER } from "src/app_co
 import { createLogger } from "src/app_config/logger";
 import { RoleType, Roles, } from "src/common";
 import { UserId } from "src/utils/req-user-id-decorator";
-import { Body, Controller, Delete, Get, Patch, Post, Query } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import { IssueService } from "./issue.service";
 import { CreateIssueDto } from "./dto/create-issue.dto";
 import { UpdateIssueDto } from "./dto/update-issue.dto";
 import { FindIssueDto } from "./dto/find-issue.dto";
+import { JwtAuthGuard } from "src/auth/entities/jwt-auth-guard";
+import { RolesGuard } from "src/common/guards/roles.guard";
 
 @Controller('issue')
 export class IssueController {
@@ -55,6 +57,8 @@ export class IssueController {
     }
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleType.ADMIN)
   @Get()
   async findAll(
     @Query() searchCriteria: FindIssueDto,
