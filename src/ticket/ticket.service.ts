@@ -132,8 +132,8 @@ export class TicketService {
     const fnName = this.create.name;
     this.logger.debug(`${fnName}: start`);
 
-    let deviceId: string | null = createTicketDto.deviceId || null;
-    let issueId: string | null = createTicketDto.issueId || null;
+    let deviceId = createTicketDto.deviceId || null;
+    let issueId = createTicketDto.issueId || null;
 
     if (!deviceId && createTicketDto.device?.deviceModelId && createTicketDto.device.serialNumber) {
       const device = await this.deviceService.findOrCreate({

@@ -24,6 +24,7 @@ import { APP_GUARD } from '@nestjs/core';
 // import { RolesGuard } from './common';
 import { JwtAuthGuard } from './auth/entities/jwt-auth-guard';
 import { TicketMediaModule } from './ticket-media/ticket-media.module';
+import { RolesGuard } from './common/guards/roles.guard';
 // import { SmsModule } from './sms/sms.module';
 
 @Module({
@@ -73,16 +74,16 @@ import { TicketMediaModule } from './ticket-media/ticket-media.module';
     DistrictModule,
     StateModule
   ],
-  // providers: [
-  //   {
-  //     provide: APP_GUARD,
-  //     useClass: JwtAuthGuard, // authentication
-  //   },
-  //   {
-  //     provide: APP_GUARD,
-  //     useClass: RolesGuard, // authorization
-  //   },
-  // ]
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard, // authentication
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard, // authorization
+    },
+  ]
 })
 export class AppModule { }
 
@@ -176,3 +177,6 @@ export class AppModule { }
 // → Controller method
 // → Response
 
+// sebi :
+// 1401000207 
+// 717051567

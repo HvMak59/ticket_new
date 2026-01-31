@@ -31,7 +31,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export const TicketMediaInterceptor = FilesInterceptor(
     'media',             // field name from frontend
-    10,                  // max number of files
+    4,                  // max number of files
     {
         storage: diskStorage({
             destination: join(process.cwd(), 'uploads', 'temp'),

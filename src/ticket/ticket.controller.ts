@@ -78,6 +78,7 @@ export class TicketController {
   // }
 
   @UseInterceptors(TicketMediaInterceptor)
+  @Roles(RoleType.ADMIN)
   @Post()
   async create(
     @UserId() userId: string,
@@ -87,7 +88,7 @@ export class TicketController {
     // console.log("files", files)
 
     if (!userId) {
-      throw new Error('USER_NOT_IN_REQUEST_HEADER');
+      throw new Error(USER_NOT_IN_REQUEST_HEADER);
     }
 
     createTicketDto.createdBy = userId;

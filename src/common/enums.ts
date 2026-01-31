@@ -17,11 +17,22 @@ export enum TicketStatus {
   CLOSED = 'CLOSED',
 }
 
+// export enum QuotationStatus {
+//   PENDING = 'PENDING',
+//   ACCEPTED = 'ACCEPTED',
+//   REJECTED = 'REJECTED',
+// }
+
 export enum QuotationStatus {
-  PENDING = 'PENDING',
+  DRAFT = 'DRAFT',                 // uploaded but not sent
+  SENT = 'SENT',                   // sent to customer
   ACCEPTED = 'ACCEPTED',
   REJECTED = 'REJECTED',
+  CHANGE_REQUESTED = 'CHANGE_REQUESTED',
+  REVISED = 'REVISED',             // new PDF uploaded after change
+  EXPIRED = 'EXPIRED',
 }
+
 
 export enum FileType {
   IMAGE = 'Image',

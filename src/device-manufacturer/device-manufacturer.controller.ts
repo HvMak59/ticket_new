@@ -10,7 +10,6 @@ import {
 } from '@nestjs/common';
 import { DeviceManufacturerService } from './device-manufacturer.service';
 import { CreateDeviceManufacturerDto, UpdateDeviceManufacturerDto, FindDeviceManufacturerDto } from './dto';
-import { } from '../common/guards/jwt-auth.guard';
 import { UserId } from '../utils/req-user-id-decorator';
 import { createLogger } from '../app_config/logger';
 import { KEY_SEPARATOR, USER_NOT_IN_REQUEST_HEADER, NO_RECORD } from '../app_config/constants';

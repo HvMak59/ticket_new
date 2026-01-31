@@ -29,6 +29,15 @@ export function convertInputToDate(input: string | number | Date): Date {
   return date;
 }
 
+export function getBearerToken(token?: string): string {
+  if (!token) {
+    throw new Error('Authorization token is missing');
+  }
+
+  return token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+}
+
+
 
 export function getTokenString(token: string): string {
   if (!token) {

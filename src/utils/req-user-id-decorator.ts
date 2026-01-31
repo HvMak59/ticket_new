@@ -8,3 +8,24 @@ export const UserId = createParamDecorator(
     return getUserIdFromReq(request);
   },
 );
+
+
+// import { Request } from 'express';
+
+// export function getTokenFromReq(req: Request): string {
+//   const authHeader = req.headers['authorization'];
+
+//   if (!authHeader) {
+//     throw new Error('Authorization token is missing');
+//   }
+
+//   // Already "Bearer xxx"
+//   if (authHeader.startsWith('Bearer ')) {
+//     return authHeader;
+//   }
+
+//   // Raw token → add Bearer
+//   return `Bearer ${authHeader}`;
+// }
+
+

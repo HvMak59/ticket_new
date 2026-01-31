@@ -1,12 +1,10 @@
-import { Body, Controller, Get, Post, Request, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Request, UnauthorizedException, UseGuards } from '@nestjs/common';
 // import { winstonServerLogger } from 'app_config/serverWinston.config';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './entities/local_auth_guard';
 import { Public } from './entities/public_route';
 import { winstonServerLogger } from 'src/app_config/serverWinston.config';
 import { VerifyOtpDto } from 'src/otp/dto/verify-otp.dto';
-import { OtpService } from 'src/otp/otp.service';
-import { RegisterDto } from './dto';
 
 @Controller('auth')
 export class AuthController {
@@ -17,14 +15,17 @@ export class AuthController {
 
   @Public()
   @UseGuards(LocalAuthGuard)
-  //@Public()
+  @HttpCode(HttpStatus.OK)
   @Post('login')
   login(@Request() req: any) {
     //this.logger.debug(`request : ${JSON.stringify(req)}`);
-    console.log("in login")
+    // console.log("in login", req.user);
     return this.authService.login(req.user);
   }
 
+
+  @Public()
+  @UseGuards(LocalAuthGuard)
   @Post('login-otp')
   async loginWithOtp(@Body() dto: VerifyOtpDto) {
     console.log("in otp login controller");

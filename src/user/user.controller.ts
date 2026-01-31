@@ -8,8 +8,11 @@ import { Roles, RoleType } from '../common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { FindUserDto } from './dto/find-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Token } from './token-extractor/token-extractor';
+// import { Token } from './token-extractor/token-extractor';
 import { JwtAuthGuard } from 'src/auth/entities/jwt-auth-guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { getTokenString } from 'src/utils/other';
+import { Token } from 'src/utils/token.decorator';
 
 @Controller('user')
 // @UseGuards(JwtAuthGuard)
@@ -40,7 +43,6 @@ export class UserController {
   }
 
   @Get()
-  // @UseGuards(RolesGuard)
   async findAll(@Query() searchCriteria: FindUserDto) {
     const fnName = this.findAll.name;
     const input = `Input : Find User with searchCriteria : ${JSON.stringify(searchCriteria)}`;
@@ -77,18 +79,16 @@ export class UserController {
     return result;
   }
 
-  @Get('engineers')
-  // @UseGuards(RolesGuard)
-  async getFieldEngineers() {
-    const fnName = this.getFieldEngineers.name;
-
-    this.logger.debug(`${fnName} : Getting all field engineers`);
-
-    return await this.userService.getFieldEngineers();
-  }
 
   @Patch()
-  async update(@UserId() userId: string, @Query('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // @Roles(RoleType.ADMIN)
+  async update(
+    @Token() token: string,
+    @UserId() userId: string,
+    @Query('id') id: string,
+    @Body() updateUserDto: UpdateUserDto
+  ) {
     const fnName = this.update.name;
     const input = `Input : Id : ${id}, updateUserDto : ${JSON.stringify(updateUserDto)}`;
 
@@ -101,7 +101,11 @@ export class UserController {
       updateUserDto.updatedBy = userId;
       this.logger.debug(`${fnName} : Calling Update Service`);
 
-      return await this.userService.update(id, updateUserDto);
+      // console.log("main", token)
+      // const newT = getTokenString(token);
+      // console.log("new", newT);
+
+      return await this.userService.update(id, updateUserDto, token);
     }
   }
 

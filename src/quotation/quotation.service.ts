@@ -1,11 +1,75 @@
+// import { Injectable } from "@nestjs/common";
+// import { InjectRepository } from "@nestjs/typeorm";
+// import { Repository } from "typeorm";
+// import { Quotation } from "./entity/quotation.entity";
+
+// @Injectable()
+// export class QuotationService {
+//   constructor(
+//     @InjectRepository(Quotation)
+//     private repo: Repository<Quotation>,
+//   ) { }
+
+//   upload(ticketId: string, dto: UploadQuotationDto, user) {
+//     const quotation = this.repo.create({
+//       ticketId,
+//       pdfPath: dto.pdfPath,
+//       status: QuotationStatus.DRAFT,
+//       sentById: user.id,
+//     });
+//     return this.repo.save(quotation);
+//   }
+
+//   send(q: Quotation, user) {
+//     q.status = QuotationStatus.SENT;
+//     q.sentAt = new Date();
+//     q.sentById = user.id;
+//     return this.repo.save(q);
+//   }
+
+//   revise(q: Quotation, dto, user) {
+//     q.status = QuotationStatus.REVISED;
+//     q.version += 1;
+//     q.pdfPath = dto.pdfPath;
+//     return this.repo.save(q);
+//   }
+
+//   accept(q: Quotation, user) {
+//     q.status = QuotationStatus.ACCEPTED;
+//     q.respondedById = user.id;
+//     q.respondedAt = new Date();
+//     return this.repo.save(q);
+//   }
+
+//   reject(q: Quotation, dto, user) {
+//     q.status = QuotationStatus.REJECTED;
+//     q.rejectionReason = dto.reason;
+//     q.respondedById = user.id;
+//     q.respondedAt = new Date();
+//     return this.repo.save(q);
+//   }
+
+//   requestChange(q: Quotation, dto, user) {
+//     q.status = QuotationStatus.CHANGE_REQUESTED;
+//     q.changeRequestNote = dto.note;
+//     q.respondedById = user.id;
+//     q.respondedAt = new Date();
+//     return this.repo.save(q);
+//   }
+// }
+
+
+
+
+
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Quotation, QuotationStatus } from './entity/quotation.entity';
+import { Quotation } from './entity/quotation.entity';
 import { TicketActivity } from '../ticket/entity/ticket-activity.entity';
 import { CreateQuotationDto, RespondQuotationDto } from './dto';
 import { EmailService } from '../email/email.service';
-import { TicketStatus } from 'src/common';
+import { QuotationStatus, TicketStatus } from 'src/common';
 import { TicketService } from 'src/ticket/ticket.service';
 // import { SmsService } from '../sms/sms.service';
 

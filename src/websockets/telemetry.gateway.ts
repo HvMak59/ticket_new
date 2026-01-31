@@ -122,7 +122,7 @@ export class TelemetryGateway {
 
     handleConnection(client: WebSocket) {
         console.log(`Client connected`);
-
+        // 
         client.on('message', (raw) => {
             try {
                 console.log("Raw message:", raw.toString());
@@ -205,53 +205,69 @@ export class TelemetryGateway {
         }
     }
 
-    // public sendToWebSocket(virtualDeviceId: string, devicePayloads: any[]) {
-    //     if (!devicePayloads.length) return;
+    public sendToWebSocket(virtualDeviceId: string, devicePayloads: any[]) {
+        if (!devicePayloads.length) return;
 
-    //     const metricMap = this.subscriptions.get(virtualDeviceId);
-    //     if (!metricMap) return;
+        const metricMap = this.subscriptions.get(virtualDeviceId);
+        if (!metricMap) return;
 
-    //     const groupedByMetric = new Map<string, any[]>();
+        const groupedByMetric = new Map<string, any[]>();
 
-    //     for (const payload of devicePayloads) {
-    //         const metricId = payload.metric?.metricsAttributeId;
-    //         if (!groupedByMetric.has(metricId)) {
-    //             groupedByMetric.set(metricId, []);
-    //         }
-    //         groupedByMetric.get(metricId)!.push(payload);
-    //     }
+        for (const payload of devicePayloads) {
+            const metricId = payload.metric?.metricsAttributeId;
+            if (!groupedByMetric.has(metricId)) {
+                groupedByMetric.set(metricId, []);
+            }
+            groupedByMetric.get(metricId)!.push(payload);
+        }
 
-    //     for (const [metricId, metricPayloads] of groupedByMetric.entries()) {
-    //         const sockets = metricMap.get(metricId);
-    //         if (!sockets || sockets.size === 0) continue;
+        for (const [metricId, metricPayloads] of groupedByMetric.entries()) {
+            const sockets = metricMap.get(metricId);
+            if (!sockets || sockets.size === 0) continue;
 
-    //         const telemetryDevice = TelemetryDevice.createFromTelemetry(metricPayloads[0]);
-    //         const frequency = metricPayloads[0].metric.frequency;
-    //         const metrics = metricPayloads.map((rcvd) => getMetricDTO(rcvd.metric));
+            // const telemetryDevice = TelemetryDevice.createFromTelemetry(metricPayloads[0]);
+            // const frequency = metricPayloads[0].metric.frequency;
+            // const metrics = metricPayloads.map((rcvd) => getMetricDTO(rcvd.metric));
 
-    //         const telemetryDisplayProperty: TelemetryDisplayProperty = {
-    //             metricsAttributeId: metricId,
-    //             frequency,
-    //             displayName: metricId,
-    //             unit: metricPayloads[0].metric.unit,
-    //         };
+            // const telemetryDisplayProperty: TelemetryDisplayProperty = {
+            //     metricsAttributeId: metricId,
+            //     frequency,
+            //     displayName: metricId,
+            //     unit: metricPayloads[0].metric.unit,
+            // };
 
-    //         const dto = new TelemetryPayloadDto(
-    //             telemetryDevice,
-    //             metrics,
-    //             telemetryDisplayProperty,
-    //         );
+            // const dto = new TelemetryPayloadDto(
+            //     telemetryDevice,
+            //     metrics,
+            //     telemetryDisplayProperty,
+            // );
 
-    //         const message = JSON.stringify(dto);
-    //         console.log(`Sending to ${virtualDeviceId}:${metricId} -> ${message}`);
+            const frequency = metricPayloads[0].metric.frequency;
+            // const telemetryDevice = TelemetryDevice.createFromTelemetry(metricPayloads[0]);
+            // const metrics = metricPayloads.map((rcvd) => getMetricDTO(rcvd.metric));
 
-    //         sockets.forEach((ws) => {
-    //             if (ws.readyState === ws.OPEN) {
-    //                 ws.send(message);
-    //             }
-    //         });
-    //     }
-    // }
+            const telemetryDisplayProperty = {
+                metricsAttributeId: metricId,
+                frequency,
+                displayName: metricId,
+                unit: metricPayloads[0].metric.unit,
+            };
+
+            const dto = {
+                // telemetryDevice,
+                // metrics,
+                telemetryDisplayProperty,
+            };
+            const message = JSON.stringify(dto);
+            console.log(`Sending to ${virtualDeviceId}:${metricId} -> ${message}`);
+
+            sockets.forEach((ws) => {
+                if (ws.readyState === ws.OPEN) {
+                    ws.send(message);
+                }
+            });
+        }
+    }
 }
 
 
@@ -425,3 +441,6 @@ export class TelemetryGateway {
 // //     }
 // //   }
 // }
+
+
+

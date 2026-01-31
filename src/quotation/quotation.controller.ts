@@ -1,3 +1,72 @@
+// @ApiTags('Quotations')
+// @Controller('quotations')
+// @UseGuards(JwtAuthGuard, RolesGuard, QuotationStatusGuard)
+// export class QuotationController {
+//   constructor(private readonly service: QuotationService) { }
+
+//   /* ============ MANAGER ============ */
+
+//   @Post(':ticketId/upload')
+//   @Roles(Role.MANAGER)
+//   async upload(
+//     @Param('ticketId') ticketId: string,
+//     @Body() dto: UploadQuotationDto,
+//     @Req() req,
+//   ) {
+//     return this.service.upload(ticketId, dto, req.user);
+//   }
+
+//   @Patch(':quotationId/send')
+//   @Roles(Role.MANAGER)
+//   @QuotationAction('SEND')
+//   async send(@Req() req) {
+//     return this.service.send(req.quotation, req.user);
+//   }
+
+//   @Patch(':quotationId/revise')
+//   @Roles(Role.MANAGER)
+//   @QuotationAction('REVISE')
+//   async revise(
+//     @Req() req,
+//     @Body() dto: ReviseQuotationDto,
+//   ) {
+//     return this.service.revise(req.quotation, dto, req.user);
+//   }
+
+//   /* ============ CUSTOMER ============ */
+
+//   @Patch(':quotationId/accept')
+//   @Roles(Role.CUSTOMER)
+//   @QuotationAction('ACCEPT')
+//   async accept(@Req() req) {
+//     return this.service.accept(req.quotation, req.user);
+//   }
+
+//   @Patch(':quotationId/reject')
+//   @Roles(Role.CUSTOMER)
+//   @QuotationAction('REJECT')
+//   async reject(
+//     @Req() req,
+//     @Body() dto: RejectQuotationDto,
+//   ) {
+//     return this.service.reject(req.quotation, dto, req.user);
+//   }
+
+//   @Patch(':quotationId/change-request')
+//   @Roles(Role.CUSTOMER)
+//   @QuotationAction('REQUEST_CHANGE')
+//   async requestChange(
+//     @Req() req,
+//     @Body() dto: ChangeRequestDto,
+//   ) {
+//     return this.service.requestChange(req.quotation, dto, req.user);
+//   }
+// }
+
+
+
+
+
 import {
   Controller,
   Get,
@@ -38,7 +107,7 @@ export class QuotationController {
       this.logger.error(fnName + KEY_SEPARATOR + USER_NOT_IN_REQUEST_HEADER);
       throw new Error(USER_NOT_IN_REQUEST_HEADER);
     } else {
-      createQuotationDto.createdBy = userId;
+      // createQuotationDto.createdBy = userId;
       this.logger.debug(`${fnName} : Calling Create service`);
       // return await this.quotationService.create(createQuotationDto);
       // return await this.quotationService.create(ticketId, createQuotationDto, userId);

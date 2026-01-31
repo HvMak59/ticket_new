@@ -57,8 +57,6 @@ export class IssueController {
     }
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(RoleType.ADMIN)
   @Get()
   async findAll(
     @Query() searchCriteria: FindIssueDto,

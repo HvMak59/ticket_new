@@ -66,9 +66,11 @@ export class AuthService {
     return this.jwtService.sign(payload);
   }
 
+
   async register(registerDto: RegisterDto) {
     const { name, emailId, password } = registerDto;
 
+    // 
     // check user exists 
     const existingUser = await this.userService.findOne(emailId as FindUserDto);
 

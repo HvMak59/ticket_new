@@ -271,6 +271,7 @@ export class UserService {
       .where(searchUser)
       .select('user.id')
       .addSelect('user.password')
+      .addSelect('user.userRoles')
       .getOne();
   }
 

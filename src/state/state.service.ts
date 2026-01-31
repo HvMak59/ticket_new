@@ -60,7 +60,6 @@ export class StateService {
     return this.repo.find({
       relations: relations,
       where: searchCriteria,
-      order: { name: 'ASC' },
     });
   }
 

@@ -28,8 +28,7 @@
   "device": {
     "serviceName": "device",
     "relations": [
-      "deviceModel",
-      "deviceManufacturer"
+      "deviceModel"
     ]
   },
   "state": {

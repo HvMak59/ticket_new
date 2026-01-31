@@ -6,6 +6,7 @@ import {
   Patch,
   Delete,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { StateService } from './state.service';
 import { CreateStateDto } from './dto/create-state.dto';
@@ -14,6 +15,9 @@ import { FindStateDto } from './dto/find-state.dto';
 import { winstonServerLogger } from 'src/app_config/serverWinston.config';
 import { UserId } from 'src/utils/req-user-id-decorator';
 import { KEY_SEPARATOR, USER_NOT_IN_REQUEST_HEADER } from 'src/app_config/constants';
+import { JwtAuthGuard } from 'src/auth/entities/jwt-auth-guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles, RoleType } from 'src/common';
 // import { winstonServerLogger } from 'app_config/serverWinston.config';
 // import { UserId } from 'utils/req-user-id.decorator';
 // import {
@@ -46,7 +50,7 @@ export class StateController {
     }
   }
 
-  @Get('many')
+  @Get()
   async findAll(@Query() searchCriteria: FindStateDto) {
     const fnName = this.findAll.name;
     const input = `Input : Find state with searchCriteria: ${JSON.stringify(
@@ -58,7 +62,7 @@ export class StateController {
     return await this.stateService.findAll(searchCriteria);
   }
 
-  @Get('many/relations')
+  @Get('relations')
   async findAllWthRelations(@Query() searchCriteria: FindStateDto) {
     const fnName = this.findAll.name;
     const input = `Input : Find state with searchCriteria: ${JSON.stringify(
@@ -72,7 +76,7 @@ export class StateController {
     return await this.stateService.findAll(searchCriteria, relationsRequired);
   }
 
-  @Get('one')
+  @Get('findOne')
   async findOne(@Query() searchCriteria: FindStateDto) {
     const fnName = this.findOne.name;
     const input = `Input : Find state with searchCriteria: ${JSON.stringify(
@@ -85,7 +89,7 @@ export class StateController {
     return await this.stateService.findOne(searchCriteria);
   }
 
-  @Get('one/relations')
+  @Get('findOne/relations')
   async findOneWthRelations(@Query() searchCriteria: FindStateDto) {
     const fnName = this.findOne.name;
     const input = `Input : Find state with relations and searchCriteria : ${JSON.stringify(
@@ -160,7 +164,7 @@ export class StateController {
       }
     }
   }
-
+  // 
   @Patch('restore')
   async restore(@UserId() userId: string, @Query('id') id: string) {
     const fnName = this.restore.name;
