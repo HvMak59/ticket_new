@@ -56,7 +56,7 @@ export class DeviceTypeService {
     this.logger.debug(fnName + KEY_SEPARATOR + input);
 
     const relations = relationsRequired ? this.relations : [];
-    return this.repo.find({ relations, where: searchCriteria, order: { name: 'ASC' } });
+    return this.repo.find({ relations, where: searchCriteria });
   }
 
   async findOneById(id: string) {

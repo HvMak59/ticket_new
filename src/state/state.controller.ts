@@ -73,7 +73,7 @@ export class StateController {
     const relationsRequired = true;
     this.logger.debug(`${fnName}: Calling findAll service`);
 
-    return await this.stateService.findAll(searchCriteria, relationsRequired);
+    // return await this.stateService.findAll(searchCriteria, relationsRequired);
   }
 
   @Get('findOne')

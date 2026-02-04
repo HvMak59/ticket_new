@@ -8,12 +8,9 @@ import {
   BeforeInsert,
   BeforeUpdate,
   PrimaryColumn,
-  ManyToOne,
 } from 'typeorm';
 import { UserRole } from '../../user-role/entity/user-role.entity';
 import { KEY_SEPARATOR } from '../../app_config/constants';
-import { CustomerUser } from 'src/customer-user/entities/customer-user.entity';
-import { Customer } from 'src/customer/entity/customer.entity';
 
 @Entity()
 export class User {
@@ -38,15 +35,6 @@ export class User {
 
   @OneToMany(() => UserRole, (userRole) => userRole.user)
   userRoles: UserRole[];
-
-  // @OneToMany(() => CustomerUser, (cu) => cu.user)
-  // customerUsers: CustomerUser[];
-
-  // @Column({ nullable: true })
-  // customerId: string;
-
-  // @ManyToOne(() => Customer, (customer) => customer.users)
-  // customer: Customer;
 
   @Column({ default: 'System' })
   createdBy: string;

@@ -130,6 +130,15 @@ export class UserRoleService {
 
     this.logger.debug(`${fnName} : UserRoles to be deleted are : ${JSON.stringify([...tobeDeletedUserRoles])}`);
 
+    for (const tobeDeletedUserRole of tobeDeletedUserRoles) {
+      const deletedUserRole = await this.delete(tobeDeletedUserRole.id);
+      if (deletedUserRole != null && deletedUserRole.affected != null && deletedUserRole.affected > 0) {
+        this.logger.debug(`${fnName} : ${JSON.stringify(deletedUserRole)} deleted successfully`);
+      } else {
+        this.logger.debug(`${fnName} : ${JSON.stringify(deletedUserRole)} not found and could not be deleted`);
+      }
+    }
+
     for (const newUserRole of newUserRoles) {
       newUserRole.createdBy = createdBy;
       const createdUserRole = await this.create(newUserRole);
@@ -140,14 +149,11 @@ export class UserRoleService {
       }
     }
 
-    for (const tobeDeletedUserRole of tobeDeletedUserRoles) {
-      const deletedUserRole = await this.delete(tobeDeletedUserRole.id);
-      if (deletedUserRole != null && deletedUserRole.affected != null && deletedUserRole.affected > 0) {
-        this.logger.debug(`${fnName} : ${JSON.stringify(deletedUserRole)} deleted successfully`);
-      } else {
-        this.logger.debug(`${fnName} : ${JSON.stringify(deletedUserRole)} not found and could not be deleted`);
-      }
-    }
+    return {
+      added: newUserRoles.length,
+      deleted: tobeDeletedUserRoles.length,
+    };
+
   }
 
   async delete(id: string) {

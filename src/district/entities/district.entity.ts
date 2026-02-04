@@ -28,10 +28,10 @@ export class District {
   @ManyToOne(() => State, (state) => state.districts)
   state: State;
 
-  @OneToMany(() => Customer, (customer) => customer.district)
-  customers: Customer[];
+  // @OneToMany(() => Customer, (customer) => customer.district)
+  // customers: Customer[];
 
-  @Column()
+  @Column({ nullable: true })
   stateId: string;
 
   // @Column(() => AuditDateTime)

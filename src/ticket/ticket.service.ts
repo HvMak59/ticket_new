@@ -314,14 +314,16 @@ export class TicketService {
     });
   }
 
-  async findOneById(id: string) {
+  async findOneById(id: string, relationsRequired?: boolean) {
     const fnName = this.findOneById.name;
     const input = `Input : Find Ticket by id : ${id}`;
 
     this.logger.debug(fnName + KEY_SEPARATOR + input);
 
+    const relation = relationsRequired ? this.relations : [];
     const ticket = await this.repo.findOne({
       where: { id },
+      relations: relation
     });
     if (!ticket) {
       this.logger.error(`${fnName} : ${NO_RECORD} : Ticket id : ${id} not found`);
@@ -330,22 +332,25 @@ export class TicketService {
     return ticket;
   }
 
+  // ticket raise -> send quotaion -> assing 
   async assignTicket(id: string, assignTo: string, userId: string) {
     const fnName = this.assignTicket.name;
     const input = `Input : Assign ticket ${id} to : ${assignTo}`;
 
     this.logger.debug(fnName + KEY_SEPARATOR + input);
 
-    const ticket = await this.findOneById(id);
+    const ticket = await this.findOneById(id, true);
     // console.log(ticket);
 
     const ticketTobeAssignedTo = await this.userService.findOneById(assignTo);
+
     ticket.assignedById = userId;
     ticket.assignedTo = ticketTobeAssignedTo;
     ticket.status = TicketStatus.ASSIGNED;
     // const updatedTicket = await this.repo.save(ticket);
     const updatedTicket = await this.update(id, ticket);
 
+    // const customer = ticket.customer;
     const customer = ticket.customer;
     const engineerName = ticketTobeAssignedTo.name;
     // const engineerEmail = ticketTobeAssignedTo.email;
@@ -471,7 +476,7 @@ export class TicketService {
       return restored;
     }
   }
-
+  // 
   private async logActivity(ticketId: string, action: string, description: string, performedBy: string | null): Promise<TicketActivity> {
     const fnName = 'logActivity';
     this.logger.debug(`${fnName} : Logging activity for ticket ${ticketId} : ${action}`);

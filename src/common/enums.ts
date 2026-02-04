@@ -30,7 +30,7 @@ export enum QuotationStatus {
   REJECTED = 'REJECTED',
   CHANGE_REQUESTED = 'CHANGE_REQUESTED',
   REVISED = 'REVISED',             // new PDF uploaded after change
-  EXPIRED = 'EXPIRED',
+  // EXPIRED = 'EXPIRED',
 }
 
 

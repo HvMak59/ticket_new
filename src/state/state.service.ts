@@ -8,7 +8,9 @@ import { State } from './entities/state.entity';
 
 // import serviceConfig from '../../app_config/service.config.json';
 import { winstonServerLogger } from 'src/app_config/serverWinston.config';
-import { DUPLICATE_RECORD, KEY_SEPARATOR, NO_RECORD } from 'src/app_config/constants';
+import { DUPLICATE_RECORD, KEY_SEPARATOR, NO_RECORD, STATE_URL } from 'src/app_config/constants';
+import { firstValueFrom } from 'rxjs';
+import { HttpService } from '@nestjs/axios';
 // import { winstonServerLogger } from 'app_config/serverWinston.config';
 // import {
 //   DUPLICATE_RECORD,
@@ -20,10 +22,12 @@ import { DUPLICATE_RECORD, KEY_SEPARATOR, NO_RECORD } from 'src/app_config/const
 export class StateService {
   // private readonly relations = serviceConfig.state.relations;
   private readonly relations = [];
+  private BASE_URL = 'https://india-location-hub.in/api';
 
   private readonly logger = winstonServerLogger(StateService.name);
   constructor(
     @InjectRepository(State) private readonly repo: Repository<State>,
+    private readonly httpService: HttpService
   ) { }
   async create(createStateDto: CreateStateDto) {
     const fnName = this.create.name;
@@ -48,19 +52,44 @@ export class StateService {
     }
   }
 
-  async findAll(searchCriteria: FindStateDto, relationsRequired = false) {
+  // async findAll(searchCriteria: FindStateDto, relationsRequired = false) {
+  //   const fnName = this.findAll.name;
+  //   const input = `Input : Find State with searchCriteria : ${JSON.stringify(
+  //     searchCriteria,
+  //   )}`;
+
+  //   this.logger.debug(fnName + KEY_SEPARATOR + input);
+
+  //   let relations = relationsRequired ? this.relations : [];
+  //   return this.repo.find({
+  //     relations: relations,
+  //     where: searchCriteria,
+  //   });
+  // }
+
+  async findAll(searchCriteria: FindStateDto) {
     const fnName = this.findAll.name;
-    const input = `Input : Find State with searchCriteria : ${JSON.stringify(
-      searchCriteria,
-    )}`;
+    this.logger.debug(
+      `${fnName} | Input : ${JSON.stringify(searchCriteria)}`
+    );
 
-    this.logger.debug(fnName + KEY_SEPARATOR + input);
+    try {
+      const states = await firstValueFrom(
+        // this.httpService.get(`${this.BASE_URL}/locations/states`, {
+        this.httpService.get(STATE_URL)
+      );
 
-    let relations = relationsRequired ? this.relations : [];
-    return this.repo.find({
-      relations: relations,
-      where: searchCriteria,
-    });
+      return states.data.data.states.map(
+        (district: any) => district.name
+      );
+
+    } catch (error) {
+      this.logger.error(
+        `${fnName} | Error while fetching locations`,
+        error?.response?.data || error.message,
+      );
+      throw error;
+    }
   }
 
   async findOne(searchCriteria: FindStateDto, relationsRequired = false) {

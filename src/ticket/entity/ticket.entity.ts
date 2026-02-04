@@ -13,11 +13,11 @@ export class Ticket {
   @PrimaryColumn()
   id: string;
 
-  @Column()
-  customerId: string;
-
   @ManyToOne(() => Customer, (customer) => customer.tickets)
   customer: Customer;
+
+  @Column()
+  customerId: string;
 
   @Column({ type: 'enum', enum: TicketStatus, default: TicketStatus.OPEN })
   status: TicketStatus;
@@ -80,6 +80,9 @@ export class Ticket {
 
   @ManyToOne(() => User, { nullable: true })
   assignedBy: User;
+
+  @Column({ default: false })
+  isUnderWarranty: boolean;
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;

@@ -9,7 +9,7 @@ import { District } from './entities/district.entity';
 
 // import serviceConfig from '../../app_config/service.config.json';
 // import { winstonServerLogger } from 'app_config/serverWinston.config';
-import { DUPLICATE_RECORD, KEY_SEPARATOR, NO_RECORD } from 'src/app_config/constants';
+import { DISTRICT_URL, DUPLICATE_RECORD, KEY_SEPARATOR, NO_RECORD } from 'src/app_config/constants';
 import { winstonServerLogger } from 'src/app_config/serverWinston.config';
 // import {
 //   DUPLICATE_RECORD,
@@ -17,6 +17,8 @@ import { winstonServerLogger } from 'src/app_config/serverWinston.config';
 //   NO_RECORD,
 // } from 'app_config/constants';
 import serviceConfig from '../app_config/service.config.json';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
 
 
 @Injectable()
@@ -24,8 +26,11 @@ export class DistrictService {
   private readonly logger = winstonServerLogger(DistrictService.name);
   private readonly relations = serviceConfig.district.relations;
 
+  private BASE_URL = 'https://india-location-hub.in/api';
+
   constructor(
     @InjectRepository(District) private readonly repo: Repository<District>,
+    private readonly httpService: HttpService
   ) { }
   async create(createDistrictDto: CreateDistrictDto) {
     const fnName = this.create.name;
@@ -42,10 +47,10 @@ export class DistrictService {
 
     if (result) {
       this.logger.error(
-        `${fnName}: ${DUPLICATE_RECORD} : State id : ${createDistrictDto.name}${KEY_SEPARATOR}${createDistrictDto.stateId} already exists`,
+        `${fnName}: ${DUPLICATE_RECORD} : District id : ${createDistrictDto.name}${KEY_SEPARATOR}${createDistrictDto.stateId} already exists`,
       );
       throw new Error(
-        `${DUPLICATE_RECORD} : State id : ${createDistrictDto.name}${KEY_SEPARATOR}${createDistrictDto.stateId} already exists`,
+        `${DUPLICATE_RECORD} : District id : ${createDistrictDto.name}${KEY_SEPARATOR}${createDistrictDto.stateId} already exists`,
       );
     } else {
       const createStateObj = this.repo.create(createDistrictDto);
@@ -53,20 +58,74 @@ export class DistrictService {
     }
   }
 
-  findAll(searchCriteria: FindDistrictDto, relationsRequired: boolean = false) {
+  // findAll(searchCriteria: FindDistrictDto, relationsRequired: boolean = false) {
+  //   const fnName = this.findAll.name;
+  //   const input = `Input : Find District with searchCriteria : ${JSON.stringify(
+  //     searchCriteria,
+  //   )}`;
+
+  //   this.logger.debug(fnName + KEY_SEPARATOR + input);
+
+  //   let relations = relationsRequired ? this.relations : [];
+  //   return this.repo.find({
+  //     where: searchCriteria,
+  //     relations: relations,
+  //   });
+  // }
+
+
+  async findAll(searchCriteria: FindDistrictDto) {
     const fnName = this.findAll.name;
-    const input = `Input : Find District with searchCriteria : ${JSON.stringify(
-      searchCriteria,
-    )}`;
+    this.logger.debug(
+      `${fnName} | Input : ${JSON.stringify(searchCriteria)}`
+    );
 
-    this.logger.debug(fnName + KEY_SEPARATOR + input);
+    try {
+      const districts = await firstValueFrom(
+        // this.httpService.get(`${this.BASE_URL}/locations/districts`, {
+        this.httpService.get(DISTRICT_URL, {
+          params: { state_id: searchCriteria.stateId },
+        })
+      );
 
-    let relations = relationsRequired ? this.relations : [];
-    return this.repo.find({
-      where: searchCriteria,
-      relations: relations,
-    });
+      return districts.data.data.districts.map(
+        (district: any) => district.name
+      );
+
+      // return districtResponse.data;
+    } catch (error) {
+      this.logger.error(
+        `${fnName} | Error while fetching locations`,
+        error?.response?.data || error.message,
+      );
+      throw error;
+    }
   }
+
+
+  // async findAll(searchCriteria: FindDistrictDto) {
+  //   const fnName = this.findAll.name;
+  //   this.logger.debug(
+  //     `${fnName} | Input : ${JSON.stringify(searchCriteria)}`
+  //   );
+
+  //   try {
+  //     console.log("in try");
+  //     const response = await firstValueFrom(
+  //       this.httpService.get(`${this.BASE_URL}/districts`, {
+  //         params: searchCriteria, // automatically becomes ?state=Gujarat
+  //       }),
+  //     );
+
+  //     return response.data;
+  //   } catch (error) {
+  //     this.logger.error(
+  //       `${fnName} | Error while fetching districts`,
+  //       error?.response?.data || error.message,
+  //     );
+  //     throw error;
+  //   }
+  // }
 
   findOne(searchCriteria: FindDistrictDto, relationsRequired: boolean = false) {
     const fnName = this.findOne.name;

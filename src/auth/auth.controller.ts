@@ -25,7 +25,7 @@ export class AuthController {
 
 
   @Public()
-  @UseGuards(LocalAuthGuard)
+  // @UseGuards(LocalAuthGuard)
   @Post('login-otp')
   async loginWithOtp(@Body() dto: VerifyOtpDto) {
     console.log("in otp login controller");

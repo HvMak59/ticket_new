@@ -71,7 +71,7 @@ export class DistrictController {
     const relationsRequired = true;
     return await this.districtService.findAll(
       searchCriteria,
-      relationsRequired,
+      // relationsRequired,
     );
   }
 

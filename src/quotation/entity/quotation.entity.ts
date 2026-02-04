@@ -63,7 +63,69 @@ import { QuotationStatus } from 'src/common';
 // }
 
 
-@Entity('quotations')
+// @Entity()
+// export class Quotation {
+//   constructor(data?: Partial<Quotation>) {
+//     Object.assign(this, data);
+//   }
+
+//   @PrimaryGeneratedColumn('uuid')
+//   id: string;
+
+//   @Column()
+//   ticketId: string;
+
+//   @ManyToOne(() => Ticket, (ticket) => ticket.quotations, { onDelete: 'CASCADE' })
+//   ticket: Ticket;
+
+//   @Column()
+//   pdfPath: string;
+
+//   @Column({ nullable: true })
+//   pdfName: string;
+
+//   @Column({
+//     type: 'enum',
+//     enum: QuotationStatus,
+//     default: QuotationStatus.DRAFT,
+//   })
+//   status: QuotationStatus;
+
+//   @Column({ type: 'int', default: 1 })
+//   version: number;
+
+//   @Column({ nullable: true })
+//   sentById: string;
+
+//   @ManyToOne(() => User, { nullable: true })
+//   sentBy: User;
+
+//   @Column({ type: 'timestamptz', nullable: true })
+//   sentAt: Date;
+
+//   @Column({ nullable: true })
+//   respondedById: string;
+
+//   @ManyToOne(() => Customer, { nullable: true })
+//   respondedBy: Customer;
+
+//   @Column({ type: 'timestamptz', nullable: true })
+//   respondedAt: Date;
+
+//   @Column({ type: 'text', nullable: true })
+//   rejectionReason: string;
+
+//   @Column({ type: 'text', nullable: true })
+//   changeRequestNote: string;
+
+//   @CreateDateColumn({ type: 'timestamptz' })
+//   createdAt: Date;
+
+//   @UpdateDateColumn({ type: 'timestamptz' })
+//   updatedAt: Date;
+// }
+
+@Entity()
 export class Quotation {
   constructor(data?: Partial<Quotation>) {
     Object.assign(this, data);
@@ -75,7 +137,9 @@ export class Quotation {
   @Column()
   ticketId: string;
 
-  @ManyToOne(() => Ticket, (ticket) => ticket.quotations, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Ticket, (ticket) => ticket.quotations, {
+    onDelete: 'CASCADE',
+  })
   ticket: Ticket;
 
   @Column()
@@ -84,15 +148,15 @@ export class Quotation {
   @Column({ nullable: true })
   pdfName: string;
 
+  @Column({ type: 'int', default: 1 })
+  version: number;
+
   @Column({
     type: 'enum',
     enum: QuotationStatus,
     default: QuotationStatus.DRAFT,
   })
   status: QuotationStatus;
-
-  @Column({ type: 'int', default: 1 })
-  version: number;
 
   @Column({ nullable: true })
   sentById: string;
@@ -128,6 +192,7 @@ export class Quotation {
 
 
 
+
 export const QUOTATION_TRANSITIONS = {
   MANAGER: {
     UPLOAD: ['DRAFT', 'CHANGE_REQUESTED'],
@@ -140,3 +205,5 @@ export const QUOTATION_TRANSITIONS = {
     REQUEST_CHANGE: ['SENT', 'REVISED'],
   },
 } as const;
+
+

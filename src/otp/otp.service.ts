@@ -155,7 +155,6 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import * as nodemailer from 'nodemailer';
 import { Otp } from './entities/otp.entity';
-import SMTPTransport from 'nodemailer/lib/smtp-transport';
 
 @Injectable()
 export class OtpService {

@@ -78,7 +78,7 @@ export class TicketController {
   // }
 
   @UseInterceptors(TicketMediaInterceptor)
-  @Roles(RoleType.ADMIN)
+  // @Roles(RoleType.ADMIN) 
   @Post()
   async create(
     @UserId() userId: string,
@@ -86,14 +86,22 @@ export class TicketController {
     @Body() createTicketDto: CreateTicketDto,
   ) {
     // console.log("files", files)
+    const fnName = this.create.name;
+    const input = `Input: createTicketDto: ${JSON.stringify(createTicketDto)}`;
+
+    this.logger.debug(fnName + KEY_SEPARATOR + input);
+
+    console.log(createTicketDto);
 
     if (!userId) {
       throw new Error(USER_NOT_IN_REQUEST_HEADER);
     }
+    else {
+      createTicketDto.createdBy = userId;
+      console.log("Calling create service");
+      return this.ticketService.create(createTicketDto, files);
+    }
 
-    createTicketDto.createdBy = userId;
-    // createTicketDto.customerId = userId;
-    return this.ticketService.create(createTicketDto, files);
   }
 
   private thisIsWorking = 5;
@@ -131,7 +139,7 @@ export class TicketController {
     return await this.ticketService.findAll(findTicketDto);
   }
 
-  @Get('relation')
+  @Get('relations')
   async findAllWthRelation(@Query() findTicketDto: FindTicketDto) {
     const fnName = this.findAll.name;
     const input = `Input : Find Tickets with relation with searchCriteria : ${JSON.stringify(findTicketDto)}`;
@@ -190,13 +198,13 @@ export class TicketController {
       this.logger.error(fnName + KEY_SEPARATOR + USER_NOT_IN_REQUEST_HEADER);
       throw new Error(USER_NOT_IN_REQUEST_HEADER);
     } else {
+      updateTicketDto.updatedBy = userId;
       this.logger.debug(`${fnName} : Calling update service`);
       return await this.ticketService.update(id, updateTicketDto);
     }
   }
 
   @Patch('assignTicket')
-  // @UseGuards(RolesGuard)
   // @Roles(UserRole.ADMIN, UserRole.SERVICE_MANAGER)
   async assignTicket(
     @UserId() userId: string,

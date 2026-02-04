@@ -9,6 +9,10 @@ export interface EmailOptions {
   subject: string;
   html: string;
   text?: string;
+  attachments?: {
+    filename: string;
+    path: string;
+  }[];
 }
 
 @Injectable()
@@ -28,7 +32,7 @@ export class EmailService {
     });
   }
 
-  async sendEmail(options: EmailOptions): Promise<boolean> {
+  async sendEmail(options: EmailOptions) {
     try {
       const mailOptions = {
         from: this.configService.get('SMTP_FROM', 'noreply@hermes.com'),
@@ -36,6 +40,7 @@ export class EmailService {
         subject: options.subject,
         html: options.html,
         text: options.text,
+        attachments: options.attachments
       };
 
       // console.log(mailOptions);
@@ -53,7 +58,7 @@ export class EmailService {
     customerEmail: string,
     customerName: string,
     ticketNumber: string,
-  ): Promise<boolean> {
+  ) {
     return this.sendEmail({
       to: customerEmail,
       subject: `Ticket Created - ${ticketNumber}`,
@@ -75,7 +80,7 @@ export class EmailService {
     ticketNumber: string,
     newStatus: string,
     description?: string,
-  ): Promise<boolean> {
+  ) {
     return this.sendEmail({
       to: customerEmail,
       subject: `Ticket Update - ${ticketNumber}`,
@@ -97,7 +102,7 @@ export class EmailService {
     customerName: string,
     ticketNumber: string,
     engineerName: string,
-  ): Promise<boolean> {
+  ) {
     return this.sendEmail({
       to: customerEmail,
       subject: `Engineer Assigned - ${ticketNumber}`,
@@ -122,7 +127,7 @@ export class EmailService {
     issue: Partial<Issue>,
     // issueId: string,
     // description: string,
-  ): Promise<boolean> {
+  ) {
     return this.sendEmail({
       to: engineerEmail,
       subject: `New Ticket Assigned - ${ticketNumber}`,
@@ -140,13 +145,45 @@ export class EmailService {
     });
   }
 
+  async sendQuotationEmail(
+    customerEmail: string,
+    customerName: string,
+    ticketNumber: string,
+    quotationId: string,
+    version: number,
+    pdfUrl: string,
+  ): Promise<boolean> {
+    return this.sendEmail({
+      to: customerEmail,
+      subject: `Quotation Sent - ${ticketNumber}`,
+      html: `
+      <h2>Hello ${customerName},</h2>
+      <p>A quotation has been sent for your service ticket.</p>
+
+      <p><strong>Ticket Number:</strong> ${ticketNumber}</p>
+      <p><strong>Quotation Version:</strong> ${version}</p>
+
+      <p>
+        <a href="${pdfUrl}" target="_blank">
+          👉 View / Download Quotation PDF
+        </a>
+      </p>
+
+      <p>Please review and respond to proceed further.</p>
+
+      <br>
+      <p>Best regards,<br/>Hermes Service Team</p>
+    `,
+    });
+  }
+
 
   async sendQuotationNotification(
     customerEmail: string,
     customerName: string,
     ticketNumber: string,
     amount: number,
-  ): Promise<boolean> {
+  ) {
     return this.sendEmail({
       to: customerEmail,
       subject: `Quotation Sent - ${ticketNumber}`,

@@ -144,7 +144,7 @@ export class AuthService {
     }
 
     const customer = await this.customerService.findOne({ emailId: dto.emailId });
-    console.log(customer);
+    // console.log(customer);
     if (customer) {
       // const payload = {
       //   sub: customer.id,
@@ -175,7 +175,7 @@ export class AuthService {
       role: RoleType.CUSTOMER
     };
 
-    console.log(payload)
+    // console.log(payload)
     // return {
     //   accessToken: this.jwtService.sign(payload),
     //   // isNewCustomer: true,

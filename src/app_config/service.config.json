@@ -54,7 +54,6 @@
   "customer": {
     "serviceName": "Customer",
     "relations": [
-      "district",
       "tickets"
     ]
   },
@@ -63,6 +62,7 @@
     "relations": [
       "device",
       "issue",
+      "customer",
       "quotations",
       "ticketMedias"
     ]

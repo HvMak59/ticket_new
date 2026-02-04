@@ -42,7 +42,7 @@ export class RolesGuard implements CanActivate {
     // console.log(context.switchToHttp().getRequest());
 
     const { user } = context.switchToHttp().getRequest();
-    console.log(user)
+    // console.log(user)  
 
     if (!user || !user.roles) {
       console.error("User object not found on request. Ensure JwtAuthGuard is running correctly.");

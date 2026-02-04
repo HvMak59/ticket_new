@@ -1,8 +1,5 @@
 import { KEY_SEPARATOR } from 'src/app_config/constants';
-import { CustomerUser } from 'src/customer-user/entities/customer-user.entity';
-import { District } from 'src/district/entities/district.entity';
 import { Ticket } from 'src/ticket/entity/ticket.entity';
-import { User } from 'src/user/entity/user.entity';
 import {
   Entity,
   Column,
@@ -23,7 +20,11 @@ export class Customer {
 
   @PrimaryColumn()
   id: string;
-
+  // id: string;               mmmmmm_____________mmmmmm
+  //                           |     .     *      .    |
+  //                           |       .   *    .      |
+  //                           |         . *  .        |
+  //                           |           .           |
   @BeforeInsert()
   setId() {
     this.id = this.getKey();
@@ -45,19 +46,14 @@ export class Customer {
   @Column({ nullable: true })
   address: string;
 
-  // AuditDateTime? auditDateTime;
-
   @Column()
   districtId: string;
 
-  @ManyToOne(() => District, (district) => district.customers)
-  district: District;
+  @Column()
+  stateId: string;
 
   @Column()
   pinCode: string;
-
-  // @OneToMany(() => User, (user) => user.customer)
-  // users: User[];
 
   @OneToMany(() => Ticket, (ticket) => ticket.customer)
   tickets: Ticket[];

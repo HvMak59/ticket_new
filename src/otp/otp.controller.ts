@@ -1,28 +1,13 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { OtpService } from './otp.service';
+import { Public } from 'src/auth/entities/public_route';
 @Controller('otp')
 export class OtpController {
     constructor(
         private readonly otpService: OtpService,
     ) { }
 
-    // @Post('send')
-    // async sendOtp(@Body() dto: SendOtpDto) {
-    //     return this.otpService.sendOtp(dto.phone);
-    // }
-
-    // @Post('verify')
-    // async verifyOtp(@Body() dto: VerifyOtpDto) {
-    //     const valid = await this.otpService.verifyOtp(dto.phone, dto.otp);
-
-    //     if (!valid) {
-    //         throw new UnauthorizedException('Invalid or expired OTP');
-    //     }
-
-    //     return { verified: true };
-    // }
-
-
+    @Public()
     @Post('send-otp')
     async sendOtp(@Body('email') email: string) {
         return this.otpService.sendOtp(email);
@@ -33,23 +18,4 @@ export class OtpController {
         return this.otpService.verifyOtp(body.email, body.otp);
     }
 
-    // /**
-    //  * STEP 1: Send OTP
-    //  */
-    // @Public()
-    // @Post('send')
-    // async sendOtp(@Body() dto: SendOtpDto) {
-    //     await this.otpService.sendOtp(dto.phone);
-    //     return { message: 'OTP sent successfully' };
-    // }
-
-    // /**
-    //  * STEP 2: Verify OTP & Login Customer
-    //  */
-    // @Public()
-    // @Post('verify')
-    // async verifyOtp(@Body() dto: VerifyOtpDto) {
-    //     await this.otpService.verifyOtp(dto.phone, dto.otp);
-    //     // return this.authService.loginCustomerWithPhone(dto.phone);
-    // }
 }

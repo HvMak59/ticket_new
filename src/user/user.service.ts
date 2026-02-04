@@ -208,6 +208,7 @@ export class UserService {
         NO_OF_SALTS,
       );
     }
+
     const mergedUser = await this.repo.preload(updateUserDto);
     this.logger.debug(`mergedUser : ${JSON.stringify(mergedUser)}`);
     if (mergedUser == null) {
@@ -218,9 +219,12 @@ export class UserService {
     if (mergedUser.userRoles != null && mergedUser.userRoles.length > 0) {
       this.logger.debug(`${fnName} : User to be saved with roles`);
       const { userRoles, ...mergedUserWithoutRoles } = mergedUser;
-      userToBeSaved = this.repo.create(mergedUserWithoutRoles);
-      const result = await this.repo.save(userToBeSaved);
-      if (result === null) {
+      console.log('roles', userRoles)
+      // userToBeSaved = this.repo.create(mergedUserWithoutRoles);
+      // const savedUser = await this.repo.save(userToBeSaved);
+
+      const savedUser = await this.repo.save(mergedUserWithoutRoles);
+      if (savedUser === null) {
         throw new Error(`${NO_RECORD} : User id : ${id} does not exist`);
       }
       const updateUserRoleURL = new URL(
@@ -240,14 +244,13 @@ export class UserService {
         this.httpService.patch<UserRole[]>(updateUserRoleURL.href, userRoles),
       );
       throwErrIfSrvcRespFailure(updateUserRoleURLResp);
-      return updateUserDto;
+      return savedUser;
     } else {
       this.logger.debug(`${fnName} : User to be saved without roles`);
       const user = await this.repo.save(userToBeSaved);
       this.logger.debug(`Saved user : ${JSON.stringify(user)}`);
       return user;
     }
-    //}
   }
 
   findOneWithPasswordd(searchUser: FindUserDto) {
