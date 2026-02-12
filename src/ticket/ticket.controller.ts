@@ -91,7 +91,7 @@ export class TicketController {
 
     this.logger.debug(fnName + KEY_SEPARATOR + input);
 
-    console.log(createTicketDto);
+    console.log("in controller");
 
     if (!userId) {
       throw new Error(USER_NOT_IN_REQUEST_HEADER);
@@ -172,16 +172,6 @@ export class TicketController {
     return await this.ticketService.findOneById(id);
   }
 
-  @Get('activities')
-  async getActivities(@Query('ticketId') ticketId: string) {
-    const fnName = this.getActivities.name;
-    const input = `Input : Get activities for ticket : ${ticketId}`;
-
-    this.logger.debug(fnName + KEY_SEPARATOR + input);
-    this.logger.debug(`${fnName} : Calling getActivities service`);
-
-    return await this.ticketService.getActivities(ticketId);
-  }
 
   @Patch()
   async update(
@@ -222,6 +212,26 @@ export class TicketController {
     } else {
       this.logger.debug(`${fnName} : Calling assignTo service`);
       return await this.ticketService.assignTicket(id, assignTo, userId);
+    }
+  }
+
+  @Patch('close')
+  async closeTicket(
+    @UserId() userId: string,
+    @Query('id') id: string
+  ) {
+    const fnName = this.closeTicket.name;
+    const input = `Input: close ticket : ${id}`;
+
+    this.logger.debug(fnName + KEY_SEPARATOR + input);
+
+    if (userId == null) {
+      this.logger.error(fnName + KEY_SEPARATOR + USER_NOT_IN_REQUEST_HEADER);
+      throw new Error(USER_NOT_IN_REQUEST_HEADER);
+    }
+    else {
+      this.logger.debug(`${fnName}: Calling close service`);
+      return this.ticketService.closeTicket(id);
     }
   }
 

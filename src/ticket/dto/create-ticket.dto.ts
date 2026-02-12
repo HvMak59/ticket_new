@@ -3,7 +3,7 @@ import { Ticket } from '../entity/ticket.entity';
 import { TicketMedia } from 'src/ticket-media/entities/ticket-media.entity';
 
 export class CreateTicketDto extends PartialType(Ticket) {
-    medias: TicketMedia[];
+    // medias: TicketMedia[];
 }
 
 

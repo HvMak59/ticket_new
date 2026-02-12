@@ -9,7 +9,6 @@ import {
   DeleteDateColumn,
   BeforeInsert,
   BeforeUpdate,
-  ManyToOne,
 } from 'typeorm';
 
 @Entity()
@@ -20,12 +19,7 @@ export class Customer {
 
   @PrimaryColumn()
   id: string;
-  // id: string;               mmmmmm_____________mmmmmm
-  //                           |     .     *      .    |
-  //                           |       .   *    .      |
-  //                           |         . *  .        |
-  //                           |           .           |
-  @BeforeInsert()
+
   setId() {
     this.id = this.getKey();
   }

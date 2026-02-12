@@ -142,11 +142,11 @@ export class Quotation {
   })
   ticket: Ticket;
 
-  @Column()
-  pdfPath: string;
+  @Column({ nullable: true })
+  filePath: string;
 
   @Column({ nullable: true })
-  pdfName: string;
+  fileName: string;
 
   @Column({ type: 'int', default: 1 })
   version: number;

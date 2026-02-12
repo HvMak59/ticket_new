@@ -4,9 +4,7 @@ import { Quotation } from "./entity/quotation.entity";
 import { Repository } from "typeorm";
 import { TicketService } from "src/ticket/ticket.service";
 import { QuotationStatus, TicketStatus } from "src/common";
-import { UploadQuotationDto } from "./dto/upload-quotation.dto";
 import { ReviseQuotationDto } from "./dto/revise-quotation.dto";
-import { RejectQuotationDto } from "./dto/reject-quotation.dto";
 import { ChangeRequestDto } from "./dto/change-request.dto";
 import { EmailService } from "src/email/email.service";
 import { join } from "path";
@@ -24,13 +22,14 @@ export class QuotationService {
 
   async upsertQuotation(
     ticketId: string,
-    file: Express.Multer.File,
+    file: Express.Multer.File
   ) {
     const relativeDir = join('tickets', ticketId);
     console.log(relativeDir);
 
     const uploadsRoot = join(process.cwd(), 'uploads');
     console.log(uploadsRoot);
+
 
     const ticketDir = join(uploadsRoot, relativeDir);
     console.log(ticketDir);
@@ -43,8 +42,8 @@ export class QuotationService {
 
     let quotation = await this.repo.findOne({ where: { ticketId } });
 
-    if (quotation?.pdfPath) {
-      const oldPath = join(uploadsRoot, quotation.pdfPath);
+    if (quotation?.filePath) {
+      const oldPath = join(uploadsRoot, quotation.filePath);
       try {
         await unlink(oldPath);
       } catch (_) { }
@@ -53,30 +52,64 @@ export class QuotationService {
     // write new file   
     await writeFile(absolutePath, file.buffer);
 
+    let status = QuotationStatus.DRAFT;
+    let version;
+    // let sentAt;
+    // const sentById = userId;
+
+
+    // if (quotation) {
+    //   nextStatus =
+    //     quotation.status === QuotationStatus.DRAFT
+    //       ? QuotationStatus.DRAFT
+    //       : QuotationStatus.REVISED;
+    // }
+
+    if (!quotation) {
+      // First time upload
+      status = QuotationStatus.DRAFT;
+      // sentAt = new Date();
+    } else if (quotation.status === QuotationStatus.REJECTED) {
+      // Re-send after rejection
+      status = QuotationStatus.REVISED;
+      version = quotation.version + 1;
+      // sentAt = new Date();
+    } else {
+      // normal update
+      status =
+        quotation.status === QuotationStatus.DRAFT
+          ? QuotationStatus.DRAFT
+          : QuotationStatus.REVISED;
+    }
+    // 117125013481
+
     quotation = this.repo.create({
       ...quotation,
       ticketId,
-      pdfPath: relativePath,
-      pdfName: file.originalname,
-    });
-
-    return this.repo.save(quotation);
-  }
-
-  async upload(ticketId: string, dto: UploadQuotationDto, userId: string) {
-    const ticket = await this.ticketService.findOneById(ticketId);
-    if (!ticket) throw new Error('Ticket not found');
-
-    const quotation = this.repo.create({
-      ticketId,
-      pdfPath: dto.pdfPath,
-      pdfName: dto.pdfName,
-      status: QuotationStatus.DRAFT,
-      sentById: userId,
+      fileName: file.originalname,
+      filePath: relativePath,
+      status,
+      version
     });
     // 
     return this.repo.save(quotation);
   }
+
+
+  // async upload(ticketId: string, dto: UploadQuotationDto, userId: string) {
+  //   const ticket = await this.ticketService.findOneById(ticketId);
+  //   if (!ticket) throw new Error('Ticket not found');
+
+  //   const quotation = this.repo.create({
+  //     ticketId,
+  //     pdfPath: dto.pdfPath,
+  //     pdfName: dto.pdfName,
+  //     status: QuotationStatus.DRAFT,
+  //     sentById: userId,
+  //   });
+  //   // 
+  //   return this.repo.save(quotation);
+  // }
 
   // async send(q: Quotation, userId: string) {
   //   q.status = QuotationStatus.SENT;
@@ -90,115 +123,193 @@ export class QuotationService {
   //   return this.repo.save(q);
   // } 
 
-  async send(q: Quotation, /*userId: string*/) {
-    if (!q.ticket?.customer?.emailId) {
-      throw new Error('Customer email not available');
-    }
+  // async send(q: Quotation, /*userId: string*/) {
+  //   if (!q.ticket?.customer?.emailId) {
+  //     throw new Error('Customer email not available');
+  //   }
 
-    await this.emailService.sendQuotationEmail(
-      q.ticket.customer.emailId,
-      q.ticket.customer.name,
-      q.ticketId,
-      q.id,
-      q.version,
-      q.pdfPath,
-    );
+  //   await this.emailService.sendQuotationEmail(
+  //     q.ticket.customer.emailId,
+  //     q.ticket.customer.name,
+  //     q.ticketId,
+  //     q.id,
+  //     q.version,
+  //     q.pdfPath,
+  //   );
 
-    await this.ticketService.update(q.ticketId, {
-      status: TicketStatus.QUOTATION_SENT,
-    });
-    q.status = QuotationStatus.SENT;
-    q.sentAt = new Date();
+  //   await this.ticketService.update(q.ticketId, {
+  //     status: TicketStatus.QUOTATION_SENT,
+  //   });
+  //   q.status = QuotationStatus.SENT;
+  //   q.sentAt = new Date();
 
-    await this.repo.save(q);
+  //   await this.repo.save(q);
 
-    return q;
-  }
+  //   return q;
+  // }
 
 
-  async sendQuotation(ticketId: string, emailId: string) {
-    // 1. Fetch quotation
-    console.log("in service");
+  private correctlyWorking = 4;
+  // async sendQuotation(ticketId: string, emailId: string, sentBy: string) {
+  //   // 1. Fetch quotation
+  //   console.log("in service");
+  //   const quotation = await this.repo.findOne({ where: { ticketId } });
+
+  //   // console.log(quotation)
+  //   if (!quotation || !quotation.pdfPath) {
+  //     throw new Error('Quotation not found');
+  //   }
+
+  //   // 2. Build absolute file path
+  //   const uploadsRoot = join(process.cwd(), 'uploads');
+  //   const absolutePath = join(uploadsRoot, quotation.pdfPath);
+
+  //   if (!existsSync(absolutePath)) {
+  //     throw new Error('Quotation file missing on server');
+  //   }
+
+  //   // 3. Send email
+  //   await this.emailService.sendEmail({
+  //     to: emailId,
+  //     subject: `Quotation for Ticket ${ticketId}`,
+  //     html: `
+  //       <p>Hello,</p>
+  //       <p>Please find attached the quotation for your ticket.</p>
+  //       <p>Regards,<br/>Support Team</p>
+  //     `,
+  //     attachments: [
+  //       {
+  //         filename: quotation.pdfName ?? 'quotation.pdf',
+  //         path: absolutePath,
+  //       },
+  //     ],
+  //   });
+
+  //   quotation.status = QuotationStatus.SENT;
+  //   quotation.sentById = sentBy;
+  //   quotation.sentAt = new Date();
+
+  //   await this.repo.save(quotation);
+
+  //   return {
+  //     message: 'Quotation sent successfully',
+  //   };
+  // }
+
+
+  async sendQuotation(
+    ticketId: string,
+    emailId: string,
+    sentByUserId: string,
+  ) {
+    // Fetch quotation
     const quotation = await this.repo.findOne({ where: { ticketId } });
 
-    console.log(quotation)
-    if (!quotation || !quotation.pdfPath) {
+    if (!quotation || !quotation.filePath) {
       throw new Error('Quotation not found');
     }
 
-    // 2. Build absolute file path
     const uploadsRoot = join(process.cwd(), 'uploads');
-    const absolutePath = join(uploadsRoot, quotation.pdfPath);
+    const absolutePath = join(uploadsRoot, quotation.filePath);
 
     if (!existsSync(absolutePath)) {
       throw new Error('Quotation file missing on server');
     }
 
-    // 3. Send email
+    // Send email
     await this.emailService.sendEmail({
-      // to: quotation.ticket.customer.emailId, // adjust based on your schema
-      to: emailId, // adjust based on your schema
+      to: emailId,
       subject: `Quotation for Ticket ${ticketId}`,
       html: `
-        <p>Hello,</p>
-        <p>Please find attached the quotation for your ticket.</p>
-        <p>Regards,<br/>Support Team</p>
-      `,
+      <p>Hello,</p>
+      <p>Please find attached the quotation for your ticket.</p>
+      <p>Regards,<br/>Support Team</p>
+    `,
       attachments: [
         {
-          filename: quotation.pdfName ?? 'quotation.pdf',
+          filename: quotation.fileName ?? 'quotation.pdf',
           path: absolutePath,
         },
       ],
     });
+
+    // Update quotation state
+    quotation.status = QuotationStatus.SENT;
+    quotation.sentById = sentByUserId;
+    quotation.sentAt = new Date();
+    // 
+    await this.repo.save(quotation);
+
     return {
       message: 'Quotation sent successfully',
     };
   }
 
-  async revise(q: Quotation, dto: ReviseQuotationDto) {
-    q.status = QuotationStatus.REVISED;
-    q.version += 1;
-    q.pdfPath = dto.pdfPath;
-    // q.pdfName = dto.pdfName;
 
-    return this.repo.save(q);
+  async acceptQuotation(ticketId: string, customerId: string) {
+    const quotation = await this.repo.findOne({ where: { ticketId } });
+
+    if (!quotation) {
+      throw new Error('No qotation found');
+    }
+
+    quotation.status = QuotationStatus.ACCEPTED;
+    console.log(customerId);
+    quotation.respondedById = customerId;
+    quotation.respondedAt = new Date();
+
+    return this.repo.save(quotation);
   }
 
-  async accept(q: Quotation, customerId: string) {
-    q.status = QuotationStatus.ACCEPTED;
-    q.respondedById = customerId;
-    q.respondedAt = new Date();
 
-    q.ticket.status = TicketStatus.APPROVED;
-    await this.ticketService.update(q.ticketId, {
-      status: TicketStatus.APPROVED,
-    });
-    return this.repo.save(q);
+  // async revise(q: Quotation, dto: ReviseQuotationDto) {
+  //   q.status = QuotationStatus.REVISED;
+  //   q.version += 1;
+  //   q.pdfPath = dto.pdfPath;
+  //   // q.pdfName = dto.pdfName;
+
+  //   return this.repo.save(q);
+  // }
+
+  // async accept(q: Quotation, customerId: string) {
+  //   q.status = QuotationStatus.ACCEPTED;
+  //   q.respondedById = customerId;
+  //   q.respondedAt = new Date();
+  //   // 
+  //   // q.ticket.status = TicketStatus.APPROVED;
+  //   await this.ticketService.update(q.ticketId, {
+  //     status: TicketStatus.APPROVED,
+  //   });
+  //   return this.repo.save(q);
+  // }
+
+  async reject(ticketId: string, customerId: string) {
+    // async reject(q: Quotation, dto: RejectQuotationDto, customerId: string) {
+    const quotation = await this.repo.findOne({ where: { ticketId } });
+
+    if (!quotation) {
+      throw new Error('No qotation found');
+    }
+
+    quotation.status = QuotationStatus.REJECTED;
+    quotation.respondedById = customerId;
+    quotation.respondedAt = new Date();
+
+    return this.repo.save(quotation!);
   }
 
-  async reject(q: Quotation, dto: RejectQuotationDto, customerId: string) {
-    q.status = QuotationStatus.REJECTED;
-    q.rejectionReason = dto.reason;
-    q.respondedById = customerId;
-    q.respondedAt = new Date();
+  // async requestChange(q: Quotation, dto: ChangeRequestDto, customerId: string) {
+  //   q.status = QuotationStatus.CHANGE_REQUESTED;
+  //   q.changeRequestNote = dto.note;
+  //   q.respondedById = customerId;
+  //   q.respondedAt = new Date();
 
-    return this.repo.save(q);
-  }
-
-  async requestChange(q: Quotation, dto: ChangeRequestDto, customerId: string) {
-    q.status = QuotationStatus.CHANGE_REQUESTED;
-    q.changeRequestNote = dto.note;
-    q.respondedById = customerId;
-    q.respondedAt = new Date();
-
-    return this.repo.save(q);
-  }
+  //   return this.repo.save(q);
+  // }
 
   async findByTicketId(ticketId: string) {
     return this.repo.find({
       where: { ticketId },
-      order: { version: 'DESC' },
     });
   }
 }

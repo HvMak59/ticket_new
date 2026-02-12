@@ -5,47 +5,50 @@ import {
   ManyToOne,
   PrimaryColumn,
   BeforeInsert,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Ticket } from './ticket.entity';
 import { User } from '../../user/entity/user.entity';
 import { KEY_SEPARATOR } from 'src/app_config/constants';
+import { TicketActivityAction } from 'src/common';
 
-@Entity()
-export class TicketActivity {
-  constructor(activity?: Partial<TicketActivity>) {
-    Object.assign(this, activity);
-  }
 
-  @PrimaryColumn()
-  id: string;
+// @Entity()
+// export class TicketActivity {
+//   constructor(activity?: Partial<TicketActivity>) {
+//     Object.assign(this, activity);
+//   }
 
-  @BeforeInsert()
-  setId() {
-    this.id = this.getKey();
-  }
+//   @PrimaryColumn()
+//   id: string;
 
-  @Column()
-  ticketId: string;
+//   @BeforeInsert()
+//   setId() {
+//     this.id = this.getKey();
+//   }
 
-  @Column()
-  action: string;
+//   @Column()
+//   ticketId: string;
 
-  @Column({ nullable: true })
-  description: string;
+//   @Column()
+//   action: string;
 
-  @Column({ nullable: true })
-  performedBy: string;
+//   @Column({ nullable: true })
+//   description: string;
 
-  @CreateDateColumn({ type: 'timestamptz' })
-  createdAt: Date;
+//   @Column({ nullable: true })
+//   performedBy: string;
 
-  // @ManyToOne(() => Ticket, (ticket) => ticket.activities, { onDelete: 'CASCADE' })
-  // ticket: Ticket;
+//   @CreateDateColumn({ type: 'timestamptz' })
+//   createdAt: Date;
 
-  @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
-  performer: User;
+//   // @ManyToOne(() => Ticket, (ticket) => ticket.activities, { onDelete: 'CASCADE' })
+//   // ticket: Ticket;
 
-  getKey() {
-    return this.ticketId + KEY_SEPARATOR + this.performedBy;
-  }
-}
+//   @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
+//   performer: User;
+
+//   getKey() {
+//     return this.ticketId + KEY_SEPARATOR + this.performedBy;
+//   }
+// }

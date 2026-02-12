@@ -17,6 +17,19 @@ export enum TicketStatus {
   CLOSED = 'CLOSED',
 }
 
+export enum TicketActivityAction {
+  CREATED = 'CREATED',
+  UPDATED = 'UPDATED',
+  STATUS_CHANGED = 'STATUS_CHANGED',
+
+  QUOTATION_UPLOADED = 'QUOTATION_UPLOADED',
+  QUOTATION_SENT = 'QUOTATION_SENT',
+  QUOTATION_REJECTED = 'QUOTATION_REJECTED',
+  QUOTATION_ACCEPTED = 'QUOTATION_ACCEPTED',
+  QUOTATION_REVISED = 'QUOTATION_REVISED',
+}
+
+
 // export enum QuotationStatus {
 //   PENDING = 'PENDING',
 //   ACCEPTED = 'ACCEPTED',
@@ -37,4 +50,9 @@ export enum QuotationStatus {
 export enum FileType {
   IMAGE = 'Image',
   VIDEO = 'Video',
+}
+
+
+export enum MetricsFrequency {
+  INSTANT, DAILY, MONTHLY, YEARLY, TOTAL
 }

@@ -5,6 +5,7 @@ import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './auth/exceptionFilter';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { WsAdapter } from '@nestjs/platform-ws';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -30,6 +31,8 @@ async function bootstrap() {
       },
     }),
   );
+
+  app.useWebSocketAdapter(new WsAdapter(app));
 
   app.useStaticAssets(join(process.cwd(), 'uploads'), {
     prefix: '/uploads',

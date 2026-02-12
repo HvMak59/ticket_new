@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThanOrEqual, Like, Between, DeepPartial } from 'typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Ticket } from './entity/ticket.entity';
-import { TicketActivity } from './entity/ticket-activity.entity';
 import { CreateTicketDto, UpdateTicketStatusDto, FindTicketDto, UpdateTicketDto, AssignTicketDto, } from './dto';
 import { DeviceService } from '../device/device.service';
 import { CustomerService } from '../customer/customer.service';
@@ -28,11 +27,7 @@ export class TicketService {
   private readonly relations = serviceConfig.ticket.relations;
 
   constructor(
-    @InjectRepository(Ticket)
-    private readonly repo: Repository<Ticket>,
-    @InjectRepository(TicketActivity)
-    private readonly activityRepo: Repository<TicketActivity>,
-    @InjectRepository(User)
+    @InjectRepository(Ticket) private readonly repo: Repository<Ticket>,
     private readonly deviceService: DeviceService,
     private readonly userService: UserService,
     private readonly emailService: EmailService,
@@ -134,6 +129,11 @@ export class TicketService {
 
     let deviceId = createTicketDto.deviceId || null;
     let issueId = createTicketDto.issueId || null;
+    const media = Array.isArray(files) ? files : [];
+
+    const dateOfPurchase = createTicketDto.dateOfPurchase
+      ? new Date(Number(createTicketDto.dateOfPurchase))
+      : undefined;
 
     if (!deviceId && createTicketDto.device?.deviceModelId && createTicketDto.device.serialNumber) {
       const device = await this.deviceService.findOrCreate({
@@ -155,7 +155,7 @@ export class TicketService {
       });
 
       if (duplicate) {
-        await this.cleanupFiles(files);
+        await this.cleanupFiles(media);
         throw new Error('DUPLICATE_RECORD: Ticket already exists');
       }
     }
@@ -184,7 +184,7 @@ export class TicketService {
     // return saved;
 
     try {
-      const movedFiles = await this.moveFilesToFinal(files, ticketId);
+      const movedFiles = await this.moveFilesToFinal(media, ticketId);
 
       const ticketMedias = this.ticketMediaService.buildFromFiles(movedFiles);
 
@@ -193,11 +193,12 @@ export class TicketService {
         id: ticketId,
         status: TicketStatus.UNDER_REVIEW,
         ticketMedias,
+        dateOfPurchase
       });
 
       return await this.repo.save(ticket);
     } catch (err) {
-      await this.cleanupFiles(files);
+      await this.cleanupFiles(media);
       throw new Error(`Error creating ticket, ${err}`);
     }
   }
@@ -393,7 +394,7 @@ export class TicketService {
       ticket.status = TicketStatus.CLOSED;
       // ticket.closeReason = 'Auto-closed after 5 days with no customer response';
       await this.repo.save(ticket);
-      await this.logActivity(ticket.id, 'Auto-Closed', 'Automatically closed after 5 days', null);
+      // await this.logActivity(ticket.id, 'Auto-Closed', 'Automatically closed after 5 days', null);
       this.logger.log(`${fnName} : Auto-closed ticket: ${ticket.id}`);
     }
 
@@ -416,17 +417,21 @@ export class TicketService {
     };
   }
 
-  async getActivities(ticketId: string) {
-    const fnName = this.getActivities.name;
-    const input = `Input : Get activities for ticket : ${ticketId}`;
+  async closeTicket(id: string) {
+    const fnName = this.closeTicket.name;
+    const input = `Input: close ticket : ${id}`;
 
     this.logger.debug(fnName + KEY_SEPARATOR + input);
 
-    return this.activityRepo.find({
-      where: { ticketId },
-      relations: ['performer'],
-      order: { createdAt: 'DESC' },
-    });
+    const ticket = await this.repo.findOneBy({ id });
+
+    if (!ticket) {
+      throw new Error(`Ticket not found`);
+    }
+    ticket.status = TicketStatus.RESOLVED;
+    ticket.closedAt = new Date();
+
+    return await this.update(id, ticket);
   }
 
   async delete(id: string) {
@@ -475,13 +480,5 @@ export class TicketService {
       this.repo.save(restored!);
       return restored;
     }
-  }
-  // 
-  private async logActivity(ticketId: string, action: string, description: string, performedBy: string | null): Promise<TicketActivity> {
-    const fnName = 'logActivity';
-    this.logger.debug(`${fnName} : Logging activity for ticket ${ticketId} : ${action}`);
-
-    const activity = this.activityRepo.create({ ticketId, action, description, performedBy: performedBy || undefined });
-    return await this.activityRepo.save(activity);
   }
 }

@@ -42,16 +42,15 @@ export const TicketMediaInterceptor = FilesInterceptor(
                 cb(null, `${fileName}${extention}`);
             },
         }),
+        fileFilter: (req, file, cb) => {
+            if (!file.mimetype.startsWith('image/')) {
+                cb(new Error('Only images allowed'), false);
+            }
+            cb(null, true);
+        },
         // {
         //         // limits: {
         //         //     fileSize: 5 * 1024 * 1024,
-        //         // },
-
-        //         // fileFilter: (req, file, cb) => {
-        //         //     if (!file.mimetype.startsWith('image/')) {
-        //         //         cb(new Error('Only images allowed'), false);
-        //         //     }
-        //         //     cb(null, true);
         //         // },
         // }
     },

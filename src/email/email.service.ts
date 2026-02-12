@@ -152,7 +152,7 @@ export class EmailService {
     quotationId: string,
     version: number,
     pdfUrl: string,
-  ): Promise<boolean> {
+  ) {
     return this.sendEmail({
       to: customerEmail,
       subject: `Quotation Sent - ${ticketNumber}`,
@@ -165,7 +165,7 @@ export class EmailService {
 
       <p>
         <a href="${pdfUrl}" target="_blank">
-          👉 View / Download Quotation PDF
+          View / Download Quotation PDF
         </a>
       </p>
 

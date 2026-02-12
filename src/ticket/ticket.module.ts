@@ -1,8 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Ticket } from './entity/ticket.entity';
-import { TicketActivity } from './entity/ticket-activity.entity';
-import { TicketMedia } from '../ticket-media/entities/ticket-media.entity';
 import { TicketService } from './ticket.service';
 import { TicketController } from './ticket.controller';
 import { DeviceModule } from '../device/device.module';
@@ -11,7 +9,7 @@ import { UserModule } from '../user/user.module';
 import { TicketMediaModule } from 'src/ticket-media/ticket-media.module';
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Ticket, TicketActivity]),
+    TypeOrmModule.forFeature([Ticket]),
     DeviceModule,
     CustomerModule,
     UserModule,

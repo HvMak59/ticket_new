@@ -6,6 +6,8 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { AxiosResponse } from 'axios';
+import { Metric } from 'src/metrics/entities/metric.entity';
+import { MetricsFrequency } from 'src/common';
 
 
 export function getUserIdFromReq(req: Request) {
@@ -78,5 +80,48 @@ export function throwErrIfSrvcRespFailure<T>(
       'Empty response from service',
     );
   }
+}
+
+export function getMetricDTO(metric: Partial<Metric>) {
+  console.log(metric);
+  // const { txnCaptureTime, frequency, metricsAttributeId, unit, ...metricDto } =
+  const { frequency, metricsAttributeId, unit, ...metricDto } =
+    metric;
+  return metricDto;
+}
+
+export function getPeriodTime(
+  txnCaptureTime: Date,
+  frequency?: MetricsFrequency,
+): Date {
+  let txnDate = new Date(txnCaptureTime);
+  let txnCapturePeriod: Date;
+  switch (frequency) {
+    case MetricsFrequency.INSTANT:
+      txnCapturePeriod = txnDate;
+      break;
+    /* case MetricsFrequency.WEEKLY:
+      break; */
+    case MetricsFrequency.DAILY:
+      txnCapturePeriod = new Date(
+        txnDate.getFullYear(),
+        txnDate.getMonth(),
+        txnDate.getDate(),
+      );
+      break;
+    case MetricsFrequency.MONTHLY:
+      txnCapturePeriod = new Date(txnDate.getFullYear(), txnDate.getMonth());
+      break;
+    /* case MetricsFrequency.QUARTERLY:
+      break; */
+    case MetricsFrequency.YEARLY:
+    case MetricsFrequency.TOTAL:
+      txnCapturePeriod = new Date(txnDate.getFullYear(), 0);
+      break;
+    default:
+      txnCapturePeriod = txnCaptureTime;
+      break;
+  }
+  return txnCapturePeriod;
 }
 

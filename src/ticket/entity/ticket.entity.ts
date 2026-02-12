@@ -64,7 +64,7 @@ export class Ticket {
   quotations: Quotation[];
 
   @Column({ type: 'timestamptz', nullable: true })
-  dateOfPurchase?: Date | number
+  dateOfPurchase?: number | Date;
 
   @OneToMany(() => TicketMedia, (ticketMedia) => ticketMedia.ticket, { cascade: true })
   ticketMedias: TicketMedia[];
@@ -83,6 +83,9 @@ export class Ticket {
 
   @Column({ default: false })
   isUnderWarranty: boolean;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  closedAt: Date
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;

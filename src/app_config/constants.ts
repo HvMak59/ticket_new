@@ -27,3 +27,4 @@ export const DISTRICT_URL = 'https://india-location-hub.in/api/locations/distric
 export const STATE_URL = 'https://india-location-hub.in/api/locations/states';
 
 
+export const diffToEndOfDayThreshold = 1

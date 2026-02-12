@@ -71,29 +71,18 @@ import {
   Controller,
   Get,
   Post,
-  Put,
   Body,
   Query,
-  UseGuards,
   Patch,
-  Req,
   UseInterceptors,
   UploadedFile,
 } from '@nestjs/common';
-import { CreateQuotationDto, RespondQuotationDto } from './dto';
-import { Roles, RoleType } from '../common';
 import { UserId } from '../utils/req-user-id-decorator';
 import { createLogger } from '../app_config/logger';
-import { KEY_SEPARATOR, USER_NOT_IN_REQUEST_HEADER } from '../app_config/constants';
-import { JwtAuthGuard } from 'src/auth/entities/jwt-auth-guard';
-import { RolesGuard } from 'src/common/guards/roles.guard';
-import { UploadQuotationDto } from './dto/upload-quotation.dto';
 import { QuotationAction } from './quotation-action.decorator';
-import { ReviseQuotationDto } from './dto/revise-quotation.dto';
-import { RejectQuotationDto } from './dto/reject-quotation.dto';
-import { ChangeRequestDto } from './dto/change-request.dto';
 import { QuotationService } from './quotation.service';
 import { QuotationPdfInterceptor } from './interceptor/quotation-pdf.interceptor';
+import { KEY_SEPARATOR, USER_NOT_IN_REQUEST_HEADER } from 'src/app_config/constants';
 
 // @Controller('quotation')
 // export class QuotationController {
@@ -155,98 +144,109 @@ export class QuotationController {
   private readonly logger = createLogger(QuotationController.name);
   constructor(private readonly quotationService: QuotationService) { }
 
-  // @Post('upload')
-  @Roles(RoleType.SERVICE_MANAGER)
-  async upload(
-    @Query('ticketId') ticketId: string,
-    @Body() dto: UploadQuotationDto,
-    @UserId() userId: string,
-  ) {
-    return this.quotationService.upload(ticketId, dto, userId);
-  }
-
   @Post('upload')
+  // @Roles(RoleType.SERVICE_MANAGER)
   @UseInterceptors(QuotationPdfInterceptor)
   async uploadQuotation(
+    @UserId() userId: string,
     @Body('ticketId') ticketId: string,
     @UploadedFile() file: Express.Multer.File,
   ) {
     console.log("In controller");
-    return this.quotationService.upsertQuotation(ticketId, file);
-  }
-
-  @Post('send-quotation')
-  async sendQuotation(
-    @Query('ticketId') ticketId: string,
-    @Query('emailId') emailId: string,
-  ) {
-    console.log("in controller");
-    return this.quotationService.sendQuotation(ticketId, emailId);
-  }
-
-  @Patch('send')
-  // @Roles(RoleType.SERVICE_MANAGER) 
-  // @QuotationAction('SEND')
-  // 
-  async send(
-    @UserId() userId: string,
-    @Req() req: any
-    // @Body() sendQuotationDto: 
-  ) {
-    const fnName = this.send.name;
-    const input = `Send quotation : ${JSON.stringify(req.quotation)}`;
+    const fnName = this.uploadQuotation.name;
+    const input = `Input: Updload quotation for ticket: ${ticketId}`;
 
     this.logger.debug(fnName + KEY_SEPARATOR + input);
 
-    req.quotation.sentById = userId;
-    // return this.service.send(req.quotation, req.user.id);
-    return this.quotationService.send(req.quotation);
+    if(userId == null){
+      this.logger.error(fnName + KEY_SEPARATOR + USER_NOT_IN_REQUEST_HEADER);
+      throw new Error(USER_NOT_IN_REQUEST_HEADER);
+    }
+    else {
+      this.logger.debug(`${fnName}: Calling upsertQuoation service`);
+      return this.quotationService.upsertQuotation(ticketId, file);
+    }
   }
 
-
-  @Patch('revise')
-  @Roles(RoleType.SERVICE_MANAGER)
-  @QuotationAction('REVISE')
-  async revise(
-    @Req() req: any,
-    @Body() dto: ReviseQuotationDto,
+  @Post('send')
+  // @Roles(RoleType.SERVICE_MANAGER)
+  async sendQuotation(
+    @UserId() userId: string,
+    @Query('ticketId') ticketId: string,
+    @Query('emailId') emailId: string,
   ) {
-    return this.quotationService.revise(req.quotation, dto);
+     const fnName = this.sendQuotation.name;
+    const input = `Input: Send quotation for ticket: ${ticketId}`;
+
+    this.logger.debug(fnName + KEY_SEPARATOR + input);
+
+    if(userId == null){
+      this.logger.error(fnName + KEY_SEPARATOR + USER_NOT_IN_REQUEST_HEADER);
+      throw new Error(USER_NOT_IN_REQUEST_HEADER);
+    }
+    else {
+      this.logger.debug(`${fnName}: Calling sendQuotation service`);
+      return this.quotationService.sendQuotation(ticketId, emailId, userId);
+    }
   }
 
   @Patch('accept')
-  @Roles(RoleType.CUSTOMER)
+  // @Roles(RoleType.CUSTOMER)
   @QuotationAction('ACCEPT')
-  async accept(@Req() req: any) {
-    return this.quotationService.accept(req.quotation, req.user.id);
+  async accept(
+    @UserId() userId: string,
+    @Query('ticketId') ticketId: string
+  ) {
+    return await this.quotationService.acceptQuotation(ticketId, userId);
   }
 
   @Patch('reject')
-  @Roles(RoleType.CUSTOMER)
-  @QuotationAction('REJECT')
+  // @Roles(RoleType.CUSTOMER)
   async reject(
-    @Req() req: any,
-    @Body() dto: RejectQuotationDto,
+    @UserId() userId: string,
+    @Query('ticketId') ticketId: string
   ) {
-    return this.quotationService.reject(req.quotation, dto, req.user.id);
+    return this.quotationService.reject(ticketId, userId);
   }
-
-  @Patch('change-request')
-  @Roles(RoleType.CUSTOMER)
-  @QuotationAction('REQUEST_CHANGE')
-  async requestChange(
-    @Req() req: any,
-    @Body() dto: ChangeRequestDto,
-  ) {
-    return this.quotationService.requestChange(req.quotation, dto, req.user.id);
-  }
-
 
   @Get()
   async findByTicket(@Query('ticketId') ticketId: string) {
     return this.quotationService.findByTicketId(ticketId);
   }
 }
+
+
+
+  // @Post('upload')
+  // @Roles(RoleType.SERVICE_MANAGER)
+  // async upload(
+  //   @Query('ticketId') ticketId: string,
+  //   @Body() dto: UploadQuotationDto,
+  //   @UserId() userId: string,
+  // ) {
+  //   return this.quotationService.upload(ticketId, dto, userId);
+  // }
+
+  // @Patch('revise')
+  // @Roles(RoleType.SERVICE_MANAGER)
+  // @QuotationAction('REVISE')
+  // async revise(
+  //   @Req() req: any,
+  //   @Body() dto: ReviseQuotationDto,
+  // ) {
+  //   return this.quotationService.revise(req.quotation, dto);
+  // }
+
+  
+  // @Patch('change-request')
+  // @Roles(RoleType.CUSTOMER)
+  // @QuotationAction('REQUEST_CHANGE')
+  // async requestChange(
+  //   @Req() req: any,
+  //   @Body() dto: ChangeRequestDto,
+  // ) {
+  //   return this.quotationService.requestChange(req.quotation, dto, req.user.id);
+  // }
 
 
 // @Controller('quotations')
