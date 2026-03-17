@@ -1,6 +1,16 @@
 # Hermes Ticket Management - NestJS Backend
 
-## Structure
+## Tech Stack
+```
+- Framework: NestJS (TypeScript)
+- Database: PostgreSQL
+- ORM: TypeORM
+- Authentication: JWT + Passport
+- Scheduling: @nestjs/schedule (Cron Jobs)
+- Validation: class-validator, class-transformer
+```
+
+## Project Structure
 ```
 src/
 ├── auth/           # Authentication module
@@ -14,6 +24,16 @@ src/
 └── app.module.ts   # Main module
 ```
 
+## Features
+```
+- JWT-based authentication
+- Role-Based Access Control (RBAC)
+- Ticket management system
+- Device and customer management
+- Scheduled cron jobs (auto-close tickets)
+- Modular architecture for scalability
+```
+
 ## Installation
 ```bash
 npm install @nestjs/common @nestjs/core @nestjs/config @nestjs/typeorm @nestjs/passport @nestjs/jwt @nestjs/schedule
@@ -25,9 +45,9 @@ npm install -D @types/passport-jwt @types/bcrypt
 ```
 DB_HOST=localhost
 DB_PORT=5432
-DB_USERNAME=postgres
-DB_PASSWORD=postgres
-DB_NAME=hermes
+DB_USERNAME=username
+DB_PASSWORD=password
+DB_NAME=db
 JWT_SECRET=your-secret-key
 NODE_ENV=development
 ```
